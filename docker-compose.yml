@@ -6,3 +6,12 @@ services:
     ports:
       - 3001
     restart: always
+
+  nginx:
+    build:
+      context: ./nginx/
+    depends_on:
+      - chat-app
+    ports:
+      - 5001:5001
+    restart: always
