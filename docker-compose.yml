@@ -1,0 +1,8 @@
+services:
+
+  chat-app:
+    build:
+      context: ./chat-app/
+    ports:
+      - 3001
+    restart: always
