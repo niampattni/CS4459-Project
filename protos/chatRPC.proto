@@ -30,21 +30,25 @@ message login{
 message watch{
   string user_id = 1;
   string channel = 2;
+  string key = 3;
 }
 
 message unwatch{
   string user_id = 1;
   string channel = 2;
+  string key = 3;
 }
 
 message block{
   string blocker_id = 1;
   string blocked_id = 2;
+  string key = 3;
 }
 
 message unblock{
   string blocker_id = 1;
   string blocked_id = 2;
+  string key = 3;
 }
 
 message response{
@@ -61,7 +65,7 @@ service chatService{
   rpc watchOp(watch) returns (response);
   rpc unwatchOp(unwatch) returns (response);
   rpc blockOp(block) returns (response);
-  rpc unblockOp(unblock) returns (unblock);
+  rpc unblockOp(unblock) returns (response);
   
 } 
 

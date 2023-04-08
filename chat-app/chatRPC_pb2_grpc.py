@@ -52,7 +52,7 @@ class chatServiceStub(object):
         self.unblockOp = channel.unary_unary(
                 '/main.chatService/unblockOp',
                 request_serializer=chatRPC__pb2.unblock.SerializeToString,
-                response_deserializer=chatRPC__pb2.unblock.FromString,
+                response_deserializer=chatRPC__pb2.response.FromString,
                 )
 
 
@@ -148,7 +148,7 @@ def add_chatServiceServicer_to_server(servicer, server):
             'unblockOp': grpc.unary_unary_rpc_method_handler(
                     servicer.unblockOp,
                     request_deserializer=chatRPC__pb2.unblock.FromString,
-                    response_serializer=chatRPC__pb2.unblock.SerializeToString,
+                    response_serializer=chatRPC__pb2.response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -292,6 +292,6 @@ class chatService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/main.chatService/unblockOp',
             chatRPC__pb2.unblock.SerializeToString,
-            chatRPC__pb2.unblock.FromString,
+            chatRPC__pb2.response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
