@@ -3,69 +3,69 @@ syntax = "proto3";
 package main;
 
 
-message register{
+message RegisterRequest{
   string user_id = 1;
   string password = 2;
 }
 
-message channelPost{
+message ChannelPostRequest{
   string user_id = 1;
   string channel = 2;
   string message = 3;
   string key = 4;
 }
 
-message directMessage{
+message DirectMessageRequest{
   string sender_id = 1;
   string recipient = 2;
   string message = 3;
   string key = 4;
 }
 
-message login{
+message LoginRequest{
   string user_id = 1;
   string password = 2;
 }
 
-message watch{
+message WatchRequest{
   string user_id = 1;
   string channel = 2;
   string key = 3;
 }
 
-message unwatch{
+message UnwatchRequest{
   string user_id = 1;
   string channel = 2;
   string key = 3;
 }
 
-message block{
+message BlockRequest{
   string blocker_id = 1;
   string blocked_id = 2;
   string key = 3;
 }
 
-message unblock{
+message UnblockRequest{
   string blocker_id = 1;
   string blocked_id = 2;
   string key = 3;
 }
 
-message response{
+message Response{
   string text = 1;
   bool status = 2;
 }
 
 
 service chatService{
-  rpc registerUserOp(register) returns (response);
-  rpc channelPostOp(channelPost) returns (response);
-  rpc directMessageOp(directMessage) returns (response);
-  rpc loginOp(login) returns (response);
-  rpc watchOp(watch) returns (response);
-  rpc unwatchOp(unwatch) returns (response);
-  rpc blockOp(block) returns (response);
-  rpc unblockOp(unblock) returns (response);
+  rpc RegisterUser(RegisterRequest) returns (Response);
+  rpc ChannelPost(ChannelPostRequest) returns (Response);
+  rpc DirectMessage(DirectMessageRequest) returns (Response);
+  rpc Login(LoginRequest) returns (Response);
+  rpc Watch(WatchRequest) returns (Response);
+  rpc Unwatch(UnblockRequest) returns (Response);
+  rpc Block(BlockRequest) returns (Response);
+  rpc Unblock(UnblockRequest) returns (Response);
   
 } 
 
