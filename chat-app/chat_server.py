@@ -11,16 +11,13 @@ import mysql.connector as db
 class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
     def __init__(self):
-
         self.conn = db.connect(host='localhost', port=3306, user='root', password=os.environ.get('MYSQL_PASSWORD'))
         self.cur = self.conn.cursor()
-        self.channel_posts = []
 
 
 
     def RegisterUser(self, request, context):
-
-        user_id = request.user_id 
+        user_id = request.user_id
         password = request.password
 
         # needs key

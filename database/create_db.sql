@@ -4,7 +4,7 @@ USE ChatApp;
 
 CREATE TABLE User (
     id INT AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(50) NOT NULL,
     PRIMARY KEY (id)
 );
