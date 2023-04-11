@@ -37,8 +37,6 @@ def execute_sql(conn, sql, params):
     return cur.lastrowid
 
 
-# class to provide Bank Account Services
-
 class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
     def __init__(self):
@@ -49,7 +47,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
 
 
-    def registerUserOp(self, request, context):
+    def RegisterUser(self, request, context):
 
         user_id = request.user_id 
         password = request.password
@@ -71,9 +69,9 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
             response_message = "This username already exists, please use another username."
             status = False
 
-        return chatRPC_pb2.response(text =  response_message,status = status)
+        return chatRPC_pb2.Response(text =  response_message,status = status)
 
-    def loginOp(self,request, context):
+    def Login(self,request, context):
 
         user_id = request.user_id
         password = request.password
@@ -85,7 +83,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
         row = cur.fetchall()
 
         if not row:
-            return chatRPC_pb2.response(text = "User does not exist", status = False)
+            return chatRPC_pb2.Response(text = "User does not exist", status = False)
         
         else:
             
@@ -101,14 +99,14 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                 cur.execute(set_online_sql, params)
                 conn.commit()
 
-                return chatRPC_pb2.response(text = key, status = True) # SUCCESS
+                return chatRPC_pb2.Response(text = key, status = True) # SUCCESS
             
             else:
 
-                return chatRPC_pb2.response(text = "Incorrect Password", status = False)
+                return chatRPC_pb2.Response(text = "Incorrect Password", status = False)
 
 
-    def directMessageOp(self, request, context):
+    def DirectMessage(self, request, context):
 
         sender = request.sender_id
         recipient = request.recipient
@@ -125,7 +123,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
         if not key_row:
             
-            return chatRPC_pb2.response(text = "User does not exist.", status = False)
+            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
 
         else:
 
@@ -133,7 +131,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
             if key != key_row[0]:
 
-                return chatRPC_pb2.response(text = "Incorrect Key", status = False)
+                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
 
             elif key == key_row[0]:
 
@@ -156,12 +154,12 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                         cur.execute(insert_dm_sql, params)
                         conn.commit()
 
-                        return chatRPC_pb2.response(text = "User is not online, stored message", status = False) # STORED
+                        return chatRPC_pb2.Response(text = "User is not online, stored message", status = False) # STORED
 
                     
                     except Error as e:
 
-                        return chatRPC_pb2.response(text = "Error: Failed to store message", status = False)
+                        return chatRPC_pb2.Response(text = "Error: Failed to store message", status = False)
                 
                 elif online_row == 1:
                     
@@ -173,15 +171,15 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                         cur.execute(insert_dm_sql, params)
                         conn.commit()
 
-                        return chatRPC_pb2.response(text = "sent_message", status = True) # SUCCESS
+                        return chatRPC_pb2.Response(text = "sent_message", status = True) # SUCCESS
 
                     
                     except Error as e:
 
-                        return chatRPC_pb2.response(text = "Error: Failed to send message", status = False)
+                        return chatRPC_pb2.Response(text = "Error: Failed to send message", status = False)
     
     
-    def channelPostOp(self, request, context):
+    def ChannelPost(self, request, context):
 
         """
          string user_id = 1;
@@ -204,7 +202,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
         if not key_row:
             
-            return chatRPC_pb2.response(text = "User does not exist.", status = False)
+            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
 
         else:
 
@@ -212,7 +210,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
             if key != key_row[0]:
 
-                return chatRPC_pb2.response(text = "Incorrect Key", status = False)
+                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
 
             elif key == key_row[0]:
                 
@@ -225,7 +223,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                 if not channel_row:
 
-                    return chatRPC_pb2.response(text = "Channel does not exist", status = False)
+                    return chatRPC_pb2.Response(text = "Channel does not exist", status = False)
                 
                 else:
 
@@ -240,14 +238,14 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                         cur.execute(channel_msg_sql, params)
                         conn.commit()
 
-                        return chatRPC_pb2.response(text = "sent_message", status = True) # SUCCESS
+                        return chatRPC_pb2.Response(text = "sent_message", status = True) # SUCCESS
 
                     
                     except Error as e:
 
-                        return chatRPC_pb2.response(text = "Error: Failed to post to channel", status = False)
+                        return chatRPC_pb2.Response(text = "Error: Failed to post to channel", status = False)
 
-    def blockOp(self, request, context):
+    def Block(self, request, context):
 
         # string blocker_id = 1;
         # string blocked_id = 2;
@@ -264,7 +262,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
         if not key_row:
             
-            return chatRPC_pb2.response(text = "User does not exist.", status = False)
+            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
 
         else:
 
@@ -272,7 +270,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
             if key != key_row[0]:
 
-                return chatRPC_pb2.response(text = "Incorrect Key", status = False)
+                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
 
             elif key == key_row[0]:
 
@@ -284,7 +282,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                 if not blocker_row:
 
-                    return chatRPC_pb2.response(text = "Blocker user ID does not exist", status = False)
+                    return chatRPC_pb2.Response(text = "Blocker user ID does not exist", status = False)
 
                 check_blocked_id = "select id from users where id = ?"
                 params = (blocked,)
@@ -294,7 +292,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                 if not blocked_row:
 
-                    return chatRPC_pb2.response(text = "Blocked user ID does not exist", status = False)
+                    return chatRPC_pb2.Response(text = "Blocked user ID does not exist", status = False)
 
                 block_sql = "insert into blocks values(?, ?, datetime('now'))"
                 params = (blocker, blocked)
@@ -304,14 +302,14 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                     cur.execute(block_sql, params)
                     conn.commit()
 
-                    return chatRPC_pb2.response(text = "Blocked User", status = True) # SUCCESS
+                    return chatRPC_pb2.Response(text = "Blocked User", status = True) # SUCCESS
 
                 
                 except Error as e:
 
-                    return chatRPC_pb2.response(text = "Error: Failed to record block", status = False)
+                    return chatRPC_pb2.Response(text = "Error: Failed to record block", status = False)
 
-    def unblockOp(self, request, context):
+    def Unblock(self, request, context):
 
         # string blocker_id = 1;
         # string blocked_id = 2;
@@ -328,7 +326,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
         if not key_row:
             
-            return chatRPC_pb2.response(text = "User does not exist.", status = False)
+            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
 
         else:
 
@@ -336,7 +334,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
             if key != key_row[0]:
 
-                return chatRPC_pb2.response(text = "Incorrect Key", status = False)
+                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
 
             elif key == key_row[0]:
 
@@ -348,7 +346,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                 if not blocker_row:
 
-                    return chatRPC_pb2.response(text = "Blocker user ID does not exist", status = False)
+                    return chatRPC_pb2.Response(text = "Blocker user ID does not exist", status = False)
 
                 check_blocked_id = "select id from users where id = ?"
                 params = (blocked,)
@@ -358,7 +356,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                 if not blocked_row:
 
-                    return chatRPC_pb2.response(text = "Blocked user ID does not exist", status = False)
+                    return chatRPC_pb2.Response(text = "Blocked user ID does not exist", status = False)
 
                 block_sql = "delete from blocks where blocking_user = ? and blocked_user = ?"
                 params = (blocker, blocked)
@@ -368,15 +366,15 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                     cur.execute(block_sql, params)
                     conn.commit()
 
-                    return chatRPC_pb2.response(text = "Unblocked user", status = True) # SUCCESS
+                    return chatRPC_pb2.Response(text = "Unblocked user", status = True) # SUCCESS
 
                 
                 except Error as e:
 
-                    return chatRPC_pb2.response(text = "Error: Failed to remove block from record", status = False)
+                    return chatRPC_pb2.Response(text = "Error: Failed to remove block from record", status = False)
 
     
-    def watchOp(self, request_iterator, context):
+    def Watch(self, request_iterator, context):
 
         """
         message watch{
@@ -405,7 +403,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
         if not key_row:
             
-            return chatRPC_pb2.response(text = "User does not exist.", status = False)
+            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
 
         else:
 
@@ -413,7 +411,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
             if key != key_row[0]:
 
-                return chatRPC_pb2.response(text = "Incorrect Key", status = False)
+                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
 
             elif key == key_row[0]:
                 
@@ -426,7 +424,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                 if not channel_row:
 
-                    return chatRPC_pb2.response(text = "Channel does not exist", status = False)
+                    return chatRPC_pb2.Response(text = "Channel does not exist", status = False)
                 
                 else:
 
@@ -441,7 +439,7 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
                     except Error as e:
                         
-                        return chatRPC_pb2.response(text = "Error: failed to record subscription", status = False)
+                        return chatRPC_pb2.Response(text = "Error: failed to record subscription", status = False)
 
                     while True:
 
