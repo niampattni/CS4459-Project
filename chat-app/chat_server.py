@@ -1,15 +1,14 @@
 
 from concurrent import futures
-
 import grpc
-import bank_pb2
-import bank_pb2_grpc
+import chatRPC_pb2
+import chatRPC_pb2_grpc
 import sys
 import os
 import mysql.connector as db
 
 
-class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
+class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
     def __init__(self):
 
@@ -434,62 +433,11 @@ class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
                             lastindex += 1
                             yield n
 
-
-
-
-        """
-        message watch{
-        string user_id = 1;
-        string channel = 2;
-        }
-        lastindex = 0
-        # For every client a infinite loop starts (in gRPC's own managed thread)
-        while True:
-            # Check if there are any new messages
-            while len(self.chats) > lastindex:
-                n = self.chats[lastindex]
-                lastindex += 1
-                yield n
-        """
-
-
-
-
-
-                
-
-
-
-
-
-
-
-
-# function to provide a server
-
 def server():
-
-    # initialize the grpc server object with the specified number of threads
-
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=threads))
-
-    # add the service defined in the Account Manager class to the server
-
-    chatRPC_pb2_grpc.add_chatServiceServicer_to_server(AccountManager(), server)
-
-    # define the port of the server
-
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
+    chatRPC_pb2_grpc.add_ChatServiceServicer_to_server(ChatAppManager, server)
     server.add_insecure_port('[::]:3001')
-    print("gRPC starting")
-
-    # start the server
-
     server.start()
-
-    # have the server wait for termination
-
     server.wait_for_termination()
-
-# activate the server
 
 server()

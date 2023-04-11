@@ -5,7 +5,7 @@ import grpc
 import chatRPC_pb2 as chatRPC__pb2
 
 
-class chatServiceStub(object):
+class ChatServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,48 +15,48 @@ class chatServiceStub(object):
             channel: A grpc.Channel.
         """
         self.RegisterUser = channel.unary_unary(
-                '/main.chatService/RegisterUser',
+                '/main.ChatService/RegisterUser',
                 request_serializer=chatRPC__pb2.RegisterRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.ChannelPost = channel.unary_unary(
-                '/main.chatService/ChannelPost',
+                '/main.ChatService/ChannelPost',
                 request_serializer=chatRPC__pb2.ChannelPostRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.DirectMessage = channel.unary_unary(
-                '/main.chatService/DirectMessage',
+                '/main.ChatService/DirectMessage',
                 request_serializer=chatRPC__pb2.DirectMessageRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.Login = channel.unary_unary(
-                '/main.chatService/Login',
+                '/main.ChatService/Login',
                 request_serializer=chatRPC__pb2.LoginRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.Watch = channel.unary_unary(
-                '/main.chatService/Watch',
+                '/main.ChatService/Watch',
                 request_serializer=chatRPC__pb2.WatchRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.Unwatch = channel.unary_unary(
-                '/main.chatService/Unwatch',
+                '/main.ChatService/Unwatch',
                 request_serializer=chatRPC__pb2.UnblockRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.Block = channel.unary_unary(
-                '/main.chatService/Block',
+                '/main.ChatService/Block',
                 request_serializer=chatRPC__pb2.BlockRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.Unblock = channel.unary_unary(
-                '/main.chatService/Unblock',
+                '/main.ChatService/Unblock',
                 request_serializer=chatRPC__pb2.UnblockRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
 
 
-class chatServiceServicer(object):
+class ChatServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def RegisterUser(self, request, context):
@@ -108,7 +108,7 @@ class chatServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_chatServiceServicer_to_server(servicer, server):
+def add_ChatServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'RegisterUser': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterUser,
@@ -152,12 +152,12 @@ def add_chatServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'main.chatService', rpc_method_handlers)
+            'main.ChatService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class chatService(object):
+class ChatService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -171,7 +171,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/RegisterUser',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/RegisterUser',
             chatRPC__pb2.RegisterRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -188,7 +188,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/ChannelPost',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/ChannelPost',
             chatRPC__pb2.ChannelPostRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -205,7 +205,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/DirectMessage',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/DirectMessage',
             chatRPC__pb2.DirectMessageRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -222,7 +222,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/Login',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/Login',
             chatRPC__pb2.LoginRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -239,7 +239,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/Watch',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/Watch',
             chatRPC__pb2.WatchRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -256,7 +256,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/Unwatch',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/Unwatch',
             chatRPC__pb2.UnblockRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -273,7 +273,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/Block',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/Block',
             chatRPC__pb2.BlockRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
@@ -290,7 +290,7 @@ class chatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/main.chatService/Unblock',
+        return grpc.experimental.unary_unary(request, target, '/main.ChatService/Unblock',
             chatRPC__pb2.UnblockRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,

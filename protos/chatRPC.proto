@@ -57,7 +57,7 @@ message Response{
 }
 
 
-service chatService{
+service ChatService{
   rpc RegisterUser(RegisterRequest) returns (Response);
   rpc ChannelPost(ChannelPostRequest) returns (Response);
   rpc DirectMessage(DirectMessageRequest) returns (Response);
