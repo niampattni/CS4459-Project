@@ -1,47 +1,19 @@
 
 from concurrent import futures
 
-import grpc_tools
 import grpc
 import bank_pb2
 import bank_pb2_grpc
 import sys
-import sqlite3
-
-
-# retrieve port number and thread number from command line
-
-try:
-    port_number = sys.argv[1]
-except IndexError:
-    port_number = 9004
-
-
-def create_connection(db_file):
-    """ create a database connection to a SQLite database """
-    conn = None
-    try:
-        conn = sqlite3.connect(db_file)
-        print(sqlite3.version)
-    except Error as e:
-        print(e)
-
-    return conn
-
-def execute_sql(conn, sql, params):
-
-    cur = conn.cursor()
-    cur.execute(sql, params)
-    conn.commit()
-
-    return cur.lastrowid
+import os
+import mysql.connector as db
 
 
 class chatAppManager(chatRPC_pb2_grpc.chatServiceServicer):
 
     def __init__(self):
 
-        self.conn = create_connection(r"chatdDB.db")
+        self.conn = db.connect(host='localhost', port=3306, user='root', password=os.environ.get('MYSQL_PASSWORD'))
         self.cur = self.conn.cursor()
         self.channel_posts = []
 
@@ -507,7 +479,7 @@ def server():
 
     # define the port of the server
 
-    server.add_insecure_port('[::]:' + port_number)
+    server.add_insecure_port('[::]:3001')
     print("gRPC starting")
 
     # start the server

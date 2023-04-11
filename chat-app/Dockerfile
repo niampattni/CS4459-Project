@@ -1,6 +1,6 @@
 FROM python:latest
+ENV MYSQL_PASSWORD=root
 WORKDIR /usr/src/chat-app
 COPY . .
 RUN pip install -r requirements.txt
-ENTRYPOINT [ "python3" ]
-CMD [ "app.py" ]
+CMD ["python3", "chat_server.py"]
