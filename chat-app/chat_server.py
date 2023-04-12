@@ -35,16 +35,17 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         cur.execute(query, data)
 
         # If invalid token then return None and exit
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             return None
 
         # If valid token then return User object
+        row = cur.fetchone()
         data = {
-            'id': cur[0][0]
+            'id': row[0]
         }
         query = 'SELECT id, username FROM User WHERE id=%(id)s;'
         cur.execute()
-        return cur[0]
+        return cur.fetchone()
 
     def is_blocked(self, conn, cur, user_id, recipient_id):
         data = {
@@ -54,7 +55,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         query = 'SELECT * FROM Block WHERE user_id=%(user_id)s AND block_id=%(block_id)s;'
         cur.execute(query, data)
 
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             data = {
                 'user_id': recipient_id,
                 'block_id': user_id
@@ -62,7 +63,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             query = 'SELECT * FROM Block WHERE user_id=%(user_id)s AND block_id=%(block_id)s;'
             cur.execute(query, data)
 
-        return len(cur) > 0
+        return cur.rowcount > 0
     
     def block_helper(self, request, block):
         response_message = ''
@@ -83,7 +84,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         query = 'SELECT user_id FROM User WHERE username=%(username)s;'
         cur.execute(query, data)
         
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             response_message = 'User does not exist.'
             cur.close()
             conn.close()
@@ -93,7 +94,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         # Block/Unblock user
         data = {
             'user_id': user[0],
-            'block_id': cur[0][0]
+            'block_id': cur.fetchone()[0]
         }
         if block:
             query = 'INSERT INTO Block (user_id, block_id) VALUES (%(user_id)s, %(block_id)s);'
@@ -128,7 +129,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         query = 'SELECT id FROM Channel WHERE channel_name=%(channel)s;'
         cur.execute(query, data)
 
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             response_message = 'Channel does not exist.'
             cur.close()
             conn.close()
@@ -138,7 +139,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         # Watch/Unwatch channel
         data = {
             'user_id': user[0],
-            'channel_id': cur[0][0],
+            'channel_id': cur.fetchone()[0],
         }
         if watch:
             query = 'INSERT INTO Watching (user_id, channel_id) VALUES (%(user_id)s, %(channel_id)s);'
@@ -167,7 +168,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         try:
             cur.execute(query, data)
             conn.commit()
-        except Error as e:
+        except:
             response_message = 'User already exists.'
             status = False
             cur.close()
@@ -192,7 +193,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         query = 'SELECT id FROM User WHERE username=%(username)s AND password=%(password)s;'
         cur.execute(query, data)
         
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             response_message = 'Incorrect login info.'
             status = False
             cur.close()
@@ -201,14 +202,14 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
         # Check if user has access token (did not log out)
         data = {
-            'id': cur[0][0]
+            'id': cur.fetchone()[0]
         }
         query = 'SELECT user_id, access_token FROM Online WHERE user_id=%(id)s;'
         cur.execute(query, data)
 
         # If access token exists then return it
-        if len(cur) > 0:
-            response_message = cur[0][1]
+        if cur.rowcount > 0:
+            response_message = cur.fetchone()[1]
             status = True
             self.get_missed_messages(data['id'], cur, conn)
             cur.close()
@@ -263,14 +264,14 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         query = 'SELECT id FROM User WHERE username=%(recipient)s;'
         cur.execute(query, data)
 
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             response_message = 'Recipient does not exist.'
             status = False
             cur.close()
             conn.close()
             return chatRPC_pb2.Response(text=response_message, status=status)
         
-        recipient_id = cur[0][0]
+        recipient_id = cur.fetchone()[0]
         data = {
             'id': recipient_id
         }
@@ -285,7 +286,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             return chatRPC_pb2.Response(text=response_message, status=status)
 
         # If user is offline then save message to send later, else send it
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             data = {
                 'id': recipient_id,
                 'message': request.message,
@@ -324,7 +325,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         query = 'SELECT id FROM Channel WHERE channel_name=%(channel)s;'
         cur.execute(query, data)
 
-        if len(cur) == 0:
+        if cur.rowcount == 0:
             response_message = 'Channel ' + request.channel_name + ' does not exist.'
             cur.close()
             conn.close()
@@ -333,11 +334,12 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         
         # Get list of users in channel
         data = {
-            'id': cur[0][0]
+            'id': cur.fetchone()[0]
         }
         query = 'SELECT user_id FROM Watching WHERE channel_id=%(id)s;'
         cur.execute()
-        recipient_list = [cur[i][0] for i in range(cur)]
+        
+        recipient_list = cur.fetchall()
         online_list = []
 
         # Get list of online users
@@ -348,7 +350,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             query = 'SELECT * FROM Online WHERE user_id=%(id)s;'
             cur.execute()
 
-            if len(cur) > 0:
+            if cur.rowcount > 0:
                 online_list.append(recipient)
         
         # Get list of offline users
@@ -395,7 +397,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
 def server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
-    chatRPC_pb2_grpc.add_ChatServiceServicer_to_server(ChatAppManager, server)
+    chatRPC_pb2_grpc.add_ChatServiceServicer_to_server(ChatAppManager(), server)
     server.add_insecure_port('[::]:3001')
     server.start()
     server.wait_for_termination()
