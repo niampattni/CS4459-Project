@@ -1,5 +1,5 @@
 FROM python:latest
-ENV MYSQL_PASSWORD=root
+ENV MYSQL_PASSWORD=pass
 WORKDIR /usr/src/chat-app
 COPY . .
 RUN pip install -r requirements.txt
