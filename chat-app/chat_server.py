@@ -10,6 +10,12 @@ from datetime import datetime
 
 class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
+    def __init__(self):
+        self.chats = []
+    
+    def message_receiver(self, message_from, message_text, message_date):
+        self.chats.append(chatRPC_pb2.MessageResponse(from=message_from, text=message_text, date=message_date))
+
     def get_db(self):
         # Open connection to DB and return cursor
         conn = db.connect(host='chat-app-db', port=3306, user='chat-app', password=os.environ.get('MYSQL_PASSWORD'), database='ChatApp')
@@ -154,6 +160,14 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         conn.close()
         status = True
         return chatRPC_pb2.Response(text=response_message, status=status)
+
+    def MessageStream(self, request_iterator, ctx):
+        last_index = 0
+        while True:
+            while len(self.chats) > last_index:
+                message = self.chats[last_index]
+                last_index += 1
+                yield message
 
     def RegisterUser(self, request, ctx):
         conn, cur = self.get_db()

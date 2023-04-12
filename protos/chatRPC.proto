@@ -1,5 +1,13 @@
 syntax = "proto3";
 
+message Empty {}
+
+message MessageResponse {
+  string from = 1;
+  string text = 2;
+  string date = 3;
+}
+
 message RegisterRequest {
   string username = 1;
   string password = 2;
@@ -62,4 +70,5 @@ service ChatService{
   rpc Unwatch(UnwatchRequest) returns (Response);
   rpc Block(BlockRequest) returns (Response);
   rpc Unblock(UnblockRequest) returns (Response);
+  rpc MessageStream(Empty) returns (MessageResponse);
 } 
