@@ -46,7 +46,7 @@ class ChatServiceStub(object):
                 )
         self.Unwatch = channel.unary_unary(
                 '/ChatService/Unwatch',
-                request_serializer=chatRPC__pb2.UnblockRequest.SerializeToString,
+                request_serializer=chatRPC__pb2.UnwatchRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
         self.Block = channel.unary_unary(
@@ -153,7 +153,7 @@ def add_ChatServiceServicer_to_server(servicer, server):
             ),
             'Unwatch': grpc.unary_unary_rpc_method_handler(
                     servicer.Unwatch,
-                    request_deserializer=chatRPC__pb2.UnblockRequest.FromString,
+                    request_deserializer=chatRPC__pb2.UnwatchRequest.FromString,
                     response_serializer=chatRPC__pb2.Response.SerializeToString,
             ),
             'Block': grpc.unary_unary_rpc_method_handler(
@@ -290,7 +290,7 @@ class ChatService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ChatService/Unwatch',
-            chatRPC__pb2.UnblockRequest.SerializeToString,
+            chatRPC__pb2.UnwatchRequest.SerializeToString,
             chatRPC__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
