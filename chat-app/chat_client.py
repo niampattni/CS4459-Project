@@ -19,11 +19,16 @@ def login(stub, username, password):
         print('Your username or password is incorrect. Please try again.')
         return None
 
-    auth_token = login_reponse.text
-    with open('auth.crt', 'rw') as cert:
+    auth_token = login_response.text
+    with open('auth.crt', 'w') as cert:
         cert.write(auth_token + '\n')
     
     return auth_token
+
+def logout(stub, token):
+    logout_response = stub.Logout(chatRPC_pb2.LogoutRequest(access_token=token))
+    os.remove('auth.crt')
+    print('See you again soon!')
 
 def user_pass_prompt():
     print('Please enter your desired username:')
@@ -123,7 +128,7 @@ def get_help():
         ''')
 
 def check_auth(stub):
-    if os.path.exists('auth.crt')
+    if os.path.exists('auth.crt'):
         with open('auth.crt', 'r') as cert:
             auth_token = cert.readline().strip()
             check_login = stub.ChannelPost(chatRPC_pb2.ChannelPostRequest(channel_name='test', message='test', access_token=auth_token))
@@ -131,8 +136,8 @@ def check_auth(stub):
                 return auth_token
     return None
 
-def incoming_message_stream(stub):
-    for response in stub.MessageStream(chatRPC_pb2.Empty()):
+def incoming_message_stream(stub, token):
+    for response in stub.MessageStream(chatRPC_pb2.MessageStreamRequest(access_token=token)):
         print(response.text)
 
 def user_requests(stub):
@@ -143,13 +148,13 @@ def user_requests(stub):
         if auth_token == None:
             print('Welcome to the chat application.')
             print('Would you like to register a new account? Type yes, or no.')
-            register_account = input().lower().strip()
+            register = input().lower().strip()
 
-            if register_account not in ['yes', 'no']:
+            if register not in ['yes', 'no']:
                 print('Please enter yes or no.')
                 continue
 
-            if register_account == 'yes':
+            if register == 'yes':
                 successful_register = False
                 while not successful_register:
                     username, password = user_pass_prompt()
@@ -159,6 +164,8 @@ def user_requests(stub):
             while auth_token == None:
                 username, password = user_pass_prompt()
                 auth_token = login(stub, username, password)
+            
+            threading.Thread(target=incoming_message_stream, args=[stub, auth_token], daemon=True).start()
 
         if first_loop:
             print('Enter help for available actions and channels.')
@@ -169,7 +176,7 @@ def user_requests(stub):
             continue
         
         action[0] = action[0].lower()        
-        if action[0] not in ['dm', 'post', 'watch', 'unwatch', 'block', 'unblock', 'help']:
+        if action[0] not in ['dm', 'post', 'watch', 'unwatch', 'block', 'unblock', 'logout', 'help']:
             print("That is not a valid action, please retry or say 'help' for more info.")
             continue
 
@@ -185,13 +192,15 @@ def user_requests(stub):
             block_user(stub, action, auth_token)        
         elif action[0] == 'unblock':
             unblock_user(stub, action, auth_token)
+        elif action[0] == 'logout':
+            logout(stub, auth_token)
+            break
         else:
             get_help()
 
 def run():
     with grpc.insecure_channel('localhost:3001') as channel:
         stub = chatRPC_pb2_grpc.ChatServiceStub(channel)
-        threading.Thread(target=incoming_message_stream, args=(stub), daemon=True).start()
         user_requests(stub)
 
 run()

@@ -59,9 +59,9 @@ class ChatServiceStub(object):
                 request_serializer=chatRPC__pb2.UnblockRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.Response.FromString,
                 )
-        self.MessageStream = channel.unary_unary(
+        self.MessageStream = channel.unary_stream(
                 '/ChatService/MessageStream',
-                request_serializer=chatRPC__pb2.Empty.SerializeToString,
+                request_serializer=chatRPC__pb2.MessageStreamRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.MessageResponse.FromString,
                 )
 
@@ -177,9 +177,9 @@ def add_ChatServiceServicer_to_server(servicer, server):
                     request_deserializer=chatRPC__pb2.UnblockRequest.FromString,
                     response_serializer=chatRPC__pb2.Response.SerializeToString,
             ),
-            'MessageStream': grpc.unary_unary_rpc_method_handler(
+            'MessageStream': grpc.unary_stream_rpc_method_handler(
                     servicer.MessageStream,
-                    request_deserializer=chatRPC__pb2.Empty.FromString,
+                    request_deserializer=chatRPC__pb2.MessageStreamRequest.FromString,
                     response_serializer=chatRPC__pb2.MessageResponse.SerializeToString,
             ),
     }
@@ -356,8 +356,8 @@ class ChatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ChatService/MessageStream',
-            chatRPC__pb2.Empty.SerializeToString,
+        return grpc.experimental.unary_stream(request, target, '/ChatService/MessageStream',
+            chatRPC__pb2.MessageStreamRequest.SerializeToString,
             chatRPC__pb2.MessageResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

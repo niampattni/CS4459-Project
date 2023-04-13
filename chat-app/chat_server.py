@@ -3,27 +3,54 @@ from concurrent import futures
 import grpc
 import chatRPC_pb2
 import chatRPC_pb2_grpc
-import sys
+import json
 import os
+import socket
+import sys
+import threading
 import mysql.connector as db
 from datetime import datetime
+from confluent_kafka import Consumer, Producer
+
+consumer_conf = {
+	'bootstrap.servers': 'broker:9092',
+	'group.id': os.getenv("HOSTNAME")
+}
+
+producer_conf = {
+    'bootstrap.servers': 'broker:9092',
+    'client.id': socket.gethostname(),
+}
 
 class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
     def __init__(self):
         self.chats = []
+        self.consumer = Consumer(consumer_conf)
+        self.producer = Producer(producer_conf)
+        consume_loop = threading.Thread(target=self.consumer_loop)
+        consume_loop.start()
     
-    def message_receiver(self, message_sender, message_text, message_date, message_from_channel=False, message_channel_name=None):
-        # Kafka message receiver, adds chats to queue to be streamed out
+    def consumer_loop(self):
+        self.consumer.subscribe(['messages'])
+        while True:
+            msg = self.consumer.poll(timeout=1.0)
+            try:
+                message = json.loads(msg.value())
+            except:
+                continue
+            self.message_receiver(message["sender"], message["message"], message["date"], message["receiver_id"], message["channel"] is not None, message["channel"])
+
+    def message_receiver(self, message_sender, message_text, message_date, message_receiver_id, message_from_channel=False, message_channel_name=None):
         if message_from_channel:
-            self.chats.append(chatRPC_pb2.MessageResponse(from_name=message_from, text=message_text, date=message_date, channel_name=message_channel_name))
+            self.chats.append(chatRPC_pb2.MessageResponse(sender=message_sender, text=message_text, date=message_date, receiver_id=message_receiver_id, channel_name=message_channel_name))
         else:
-            self.chats.append(chatRPC_pb2.MessageResponse(from_name=message_from, text=message_text, date=message_date))
+            self.chats.append(chatRPC_pb2.MessageResponse(sender=message_sender, text=message_text, date=message_date, receiver_id=message_receiver_id))
 
     def get_db(self):
         # Open connection to DB and return cursor
         conn = db.connect(host='chat-app-db', port=3306, user='chat-app', password=os.environ.get('MYSQL_PASSWORD'), database='ChatApp')
-        cur = conn.cursor()
+        cur = conn.cursor(buffered=True)
         return conn, cur
     
     def get_missed_messages(self, user_id, cur, conn):
@@ -33,6 +60,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         }
         query = 'SELECT message, from_user, sender_name, datetime FROM Missed WHERE user_id=%(id)s'
         cur.execute(query, data)
+        cur.fetchall()
 
         # TODO: Display missed messages with Kafka
 
@@ -54,7 +82,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             'id': row[0]
         }
         query = 'SELECT id, username FROM User WHERE id=%(id)s;'
-        cur.execute()
+        cur.execute(query, data)
         return cur.fetchone()
 
     def is_blocked(self, conn, cur, user_id, recipient_id):
@@ -166,12 +194,15 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         return chatRPC_pb2.Response(text=response_message, status=status)
 
     def MessageStream(self, request_iterator, ctx):
+        conn, cur = self.get_db()
+        user = self.get_user(conn, cur, request_iterator.access_token)
         last_index = 0
         while True:
             while len(self.chats) > last_index:
-                message = self.chats[last_index]
                 last_index += 1
-                yield message
+                if self.chats[last_index].receiver_id == user[0]:
+                    message = self.chats[last_index]
+                    yield message
 
     def RegisterUser(self, request, ctx):
         conn, cur = self.get_db()
@@ -235,7 +266,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             return chatRPC_pb2.Response(text=response_message, status=status)
         
         # If new login, create token and return to user
-        data['token'] = str(hash(username + password) % (10 ** 20))
+        data['token'] = str(hash(request.username + request.password) % (10 ** 20))
         query = 'INSERT INTO Online (user_id, access_token) VALUES(%(id)s, %(token)s);'
         cur.execute(query, data)
         conn.commit()
@@ -313,12 +344,18 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                 'datetime': datetime.now().date()
             }
             query = 'INSERT INTO Missed (user_id, message, from_user, sender_name, datetime) VALUES (%(id)s, %(message)s, %(from_user)s, %(sender)s, %(datetime)s);'
-            cur.execute()
+            cur.execute(query, data)
             conn.commit()
             response_message = 'User offline, message stored.'
         else:
             response_message = 'User online, message sent.'
-            # TODO: User online, send message with Kafka
+            self.producer.produce('messages', value=json.dumps({
+                'sender': user[0],
+                'message': request.message,
+                'date': datetime.now().timestamp(),
+                'channel': None
+            }))
+            self.producer.flush()
         
         cur.close()
         conn.close()
@@ -355,7 +392,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             'id': cur.fetchone()[0]
         }
         query = 'SELECT user_id FROM Watching WHERE channel_id=%(id)s;'
-        cur.execute()
+        cur.execute(query, data)
         
         recipient_list = cur.fetchall()
         online_list = []
@@ -363,36 +400,42 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         # Get list of online users
         for recipient in recipient_list:
             data = {
-                'id': recipient
+                'id': recipient[0]
             }
             query = 'SELECT * FROM Online WHERE user_id=%(id)s;'
-            cur.execute()
+            cur.execute(query, data)
 
             if cur.rowcount > 0:
                 online_list.append(recipient)
-        
+
         # Get list of offline users
         offline_list = list(set(recipient_list) - set(online_list))
 
         # Send messages to online users
         for recipient in online_list:
-            if self.is_blocked(conn, cur, user[0], recipient):
+            if self.is_blocked(conn, cur, user[0], recipient[0]):
                 continue
-            # TODO: User online, send message with Kafka
+            self.producer.produce('messages', value=json.dumps({
+                'sender': user[0],
+                'message': request.message,
+                'date': datetime.now().timestamp(),
+                'channel': request.channel_name
+            }))
+        self.producer.flush()
         
         # Store messages for offline users
         for recipient in offline_list:
-            if self.is_blocked(conn, cur, user[0], recipient):
+            if self.is_blocked(conn, cur, user[0], recipient[0]):
                 continue
             data = {
-                'id': recipient,
+                'id': recipient[0],
                 'message': request.message,
                 'from_user': 0,
                 'sender': user[1],
                 'datetime': datetime.now().date()
             }
             query = 'INSERT INTO Missed (user_id, message, from_user, sender_name, datetime) VALUES (%(id)s, %(message)s, %(from_user)s, %(sender)s, %(datetime)s);'
-            cur.execute()
+            cur.execute(query, data)
             conn.commit()
         
         response_message = 'Message sent to channel.'

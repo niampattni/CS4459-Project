@@ -1,11 +1,14 @@
 syntax = "proto3";
 
-message Empty {}
+message MessageStreamRequest {
+  string access_token = 1;
+}
 
 message MessageResponse {
   string sender = 1;
   string text = 2;
   string date = 3;
+  string receiver_id = 4;
   optional string channel_name = 5;
 }
 
@@ -71,5 +74,5 @@ service ChatService{
   rpc Unwatch(UnwatchRequest) returns (Response);
   rpc Block(BlockRequest) returns (Response);
   rpc Unblock(UnblockRequest) returns (Response);
-  rpc MessageStream(Empty) returns (MessageResponse);
+  rpc MessageStream(MessageStreamRequest) returns (stream MessageResponse);
 } 
