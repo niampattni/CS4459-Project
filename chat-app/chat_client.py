@@ -88,6 +88,13 @@ def user_requests(stub):
                     elif login_response.status is True:
 
                         key = login_response.text
+                        key_file = open("auth.txt","w")
+
+                        key_file.write(username + "\n")
+                        key_file.write(key + "\n")
+
+                        authorized = True
+                        print("You are logged in!")
 
             elif register_account == 'no':
 
@@ -106,6 +113,13 @@ def user_requests(stub):
                 elif login_response.status is True:
 
                     key = login_response.text
+                    key_file = open("auth.txt","w")
+
+                    key_file.write(username + "\n")
+                    key_file.write(key + "\n")
+
+                    authorized = True
+                    print("You are logged in!")
 
         if first_loop is True:
 
@@ -113,7 +127,7 @@ def user_requests(stub):
             
             first_loop = False
         
-        action = input()
+        action = input().strip()
         
         if action == '':
             continue
@@ -134,8 +148,32 @@ def user_requests(stub):
             ...
             ''')
             continue
+        
+        action[0] = action[0].lower()
 
-        action = [phrase.strip().lower() for phrase in action.split(' ')]
+        if action[0] not in ['dm', 'post', 'watch','unwatch','block','unblock']:
+            print("that is not a valid action")
+            continue
+
+        elif len(action) < 2 and action[0] in  ["watch", "unwatch", "block", "unblock"]:
+            print("You are missing information in your action.")
+            continue
+
+        elif len(action < 3) and action[0] in ["dm","post"]:
+            print("You are missing information in your action.")
+            continue
+
+        else:
+
+            i = 1
+            while action[i] == "":
+                del action[i]
+            
+            if action[0] in ["dm", "post"]:
+
+                i =  2
+                while action[i] == "":
+                    del action[i]
 
         if action[0] == 'dm':
 
@@ -144,7 +182,7 @@ def user_requests(stub):
                 recipient = action[1]
 
                 message = ""
-                for word in action[2:] message = message + word
+                for word in action[2:]: message = message + " " + word
 
             
             except IndexError:
@@ -164,7 +202,8 @@ def user_requests(stub):
             try:
 
                 channel = action[1]
-                message = action[2]
+                message = ""
+                for word in action[2:]: message = message + " " + word
 
             except IndexError:
 
