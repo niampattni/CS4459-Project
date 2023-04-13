@@ -52,7 +52,7 @@ def login(stub, username, password):
         print('Your username or password is incorrect. Please try again.')
         return None
 
-    auth_token = login_reponse.text
+    auth_token = login_response.text
     with open('auth.crt', 'rw') as cert:
         cert.write(auth_token + '\n')
     
@@ -127,7 +127,7 @@ def block_user(stub, params, token):
     if not block_response.status:
         print(block_response.text)
     else:
-        print('Blocked user: ' + channel)
+        print('Blocked user: ' + username)
 
 def unblock_user(stub, params, token):
     try:
@@ -140,7 +140,7 @@ def unblock_user(stub, params, token):
     if not unblock_response.status:
         print(unblock_response.text)
     else:
-        print('Unblocked user: ' + channel)
+        print('Unblocked user: ' + username)
 
 def get_help():
     print('''
@@ -157,7 +157,7 @@ def get_help():
         ''')
 
 def check_auth(stub):
-    if os.path.exists('auth.crt')
+    if os.path.exists('auth.crt'):
         with open('auth.crt', 'r') as cert:
             auth_token = cert.readline().strip()
             check_login = stub.ChannelPost(chatRPC_pb2.ChannelPostRequest(channel_name='test', message='test', access_token=auth_token))
