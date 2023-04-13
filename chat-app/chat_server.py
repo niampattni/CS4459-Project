@@ -13,8 +13,11 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
     def __init__(self):
         self.chats = []
     
-    def message_receiver(self, message_from, message_text, message_date):
-        self.chats.append(chatRPC_pb2.MessageResponse(from_name=message_from, text=message_text, date=message_date))
+    def message_receiver(self, message_sender, message_text, message_date, message_from_channel=False, message_channel_name=None):
+        if message_from_channel:
+            self.chats.append(chatRPC_pb2.MessageResponse(from_name=message_from, text=message_text, date=message_date, channel_name=message_channel_name))
+        else:
+            self.chats.append(chatRPC_pb2.MessageResponse(from_name=message_from, text=message_text, date=message_date))
 
     def get_db(self):
         # Open connection to DB and return cursor
