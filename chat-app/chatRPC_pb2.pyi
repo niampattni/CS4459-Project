@@ -55,10 +55,10 @@ class MessageResponse(_message.Message):
     TEXT_FIELD_NUMBER: _ClassVar[int]
     channel_name: str
     date: str
-    receiver_id: str
+    receiver_id: int
     sender: str
     text: str
-    def __init__(self, sender: _Optional[str] = ..., text: _Optional[str] = ..., date: _Optional[str] = ..., receiver_id: _Optional[str] = ..., channel_name: _Optional[str] = ...) -> None: ...
+    def __init__(self, sender: _Optional[str] = ..., text: _Optional[str] = ..., date: _Optional[str] = ..., receiver_id: _Optional[int] = ..., channel_name: _Optional[str] = ...) -> None: ...
 
 class MessageStreamRequest(_message.Message):
     __slots__ = ["access_token"]

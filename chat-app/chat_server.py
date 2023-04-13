@@ -60,11 +60,10 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         }
         query = 'SELECT message, from_user, sender_name, datetime FROM Missed WHERE user_id=%(id)s'
         cur.execute(query, data)
-        message_list = cur.fetchall()
+        results = cur.fetchall()
 
-        for (text, from_user, sender, date) in message_list:
-            if from_user ==  1:
-                self.message_receiver(message_sender=sender, message_text=text, message_date=str(date), message_receiver_id=str(user_id))
+        for result in results:
+            self.chats.append(chatRPC_pb2.MessageResponse(sender=result[2], text=result[0], date=result[3], receiver_id=user_id))
 
     def get_user(self, conn, cur, token):
         # Check if access token is valid
@@ -199,7 +198,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         user = self.get_user(conn, cur, request_iterator.access_token)
         last_index = 0
         while True:
-            while len(self.chats) > last_index:
+            while len(self.chats) > last_index+1:
                 last_index += 1
                 if self.chats[last_index].receiver_id == user[0]:
                     message = self.chats[last_index]
@@ -340,7 +339,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             data = {
                 'id': recipient_id,
                 'message': request.message,
-                'from_user': 1,
+                'from_user': user[0],
                 'sender': user[1],
                 'datetime': datetime.now().date()
             }
@@ -351,9 +350,10 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         else:
             response_message = 'User online, message sent.'
             self.producer.produce('messages', value=json.dumps({
-                'sender': user[0],
+                'sender': user[1],
                 'message': request.message,
-                'date': datetime.now().timestamp(),
+                'receiver_id': recipient_id,
+                'date': str(int(datetime.now().timestamp())),
                 'channel': None
             }))
             self.producer.flush()
@@ -417,9 +417,10 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             if self.is_blocked(conn, cur, user[0], recipient[0]):
                 continue
             self.producer.produce('messages', value=json.dumps({
-                'sender': user[0],
+                'sender': user[1],
                 'message': request.message,
-                'date': datetime.now().timestamp(),
+                'receiver_id': recipient[0],
+                'date': str(int(datetime.now().timestamp())),
                 'channel': request.channel_name
             }))
         self.producer.flush()
@@ -433,9 +434,10 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                 'message': request.message,
                 'from_user': 0,
                 'sender': user[1],
-                'datetime': datetime.now().date()
+                'datetime': datetime.now().date(),
+                'channel_name': request.channel_name
             }
-            query = 'INSERT INTO Missed (user_id, message, from_user, sender_name, datetime) VALUES (%(id)s, %(message)s, %(from_user)s, %(sender)s, %(datetime)s);'
+            query = 'INSERT INTO Missed (user_id, message, from_user, sender_name, datetime, channel_name) VALUES (%(id)s, %(message)s, %(from_user)s, %(sender)s, %(datetime)s, %(channel_name)s);'
             cur.execute(query, data)
             conn.commit()
         
