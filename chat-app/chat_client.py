@@ -7,12 +7,6 @@ import os
 import chatRPC_pb2
 import chatRPC_pb2_grpc
 
-key = None
-username = ''
-
-port_number = '63718'
-register_account = ''
-first_loop = True
 
 
  def message_stream(stub):
@@ -44,6 +38,8 @@ def user_requests(stub):
 
 
     while(True):
+
+        first_loop = True
 
         if authorized is False:
             
@@ -294,6 +290,8 @@ def user_requests(stub):
                 print('Unblocked User: ' + blocked_user)
 
 def run():
+    
+    port_number = '63718'
 
     with grpc.insecure_channel('localhost:' + port_number) as channel:
 
