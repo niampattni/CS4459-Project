@@ -40,7 +40,7 @@ def user_pass_prompt():
 def direct_message(stub, params, token):
     try:
         recipient = params[1]
-        message = ' '.join([str(x) for x in params[2]])
+        message = ' '.join([str(x) for x in params[2:]])
     except:
         print('You are missing information in your direct message. Please use dm [username] [message].')
         return
@@ -52,7 +52,7 @@ def direct_message(stub, params, token):
 def channel_post(stub, params, token):
     try:
         channel = params[1]
-        message = ' '.join([str(x) for x in params[2]])
+        message = ' '.join([str(x) for x in params[2:]])
     except:
         print('You are missing information in your channel post. Please use post [channel] [message].')
         return
@@ -98,7 +98,7 @@ def block_user(stub, params, token):
     if not block_response.status:
         print(block_response.text)
     else:
-        print('Blocked user: ' + channel)
+        print('Blocked user: ' + username)
 
 def unblock_user(stub, params, token):
     try:
@@ -111,7 +111,7 @@ def unblock_user(stub, params, token):
     if not unblock_response.status:
         print(unblock_response.text)
     else:
-        print('Unblocked user: ' + channel)
+        print('Unblocked user: ' + username)
 
 def get_help():
     print('''
@@ -141,10 +141,10 @@ def incoming_message_stream(stub, token):
         print(response.text)
 
 def user_requests(stub):
-    auth_token = check_auth(stub)
+    auth_token = None
+    first_loop = True
 
     while(True):
-        first_loop = True
         if auth_token == None:
             print('Welcome to the chat application.')
             print('Would you like to register a new account? Type yes, or no.')
@@ -159,7 +159,7 @@ def user_requests(stub):
                 while not successful_register:
                     username, password = user_pass_prompt()
                     successful_register = register_account(stub, username, password)
-                login(stub, username, password)
+                auth_token = login(stub, username, password)
 
             while auth_token == None:
                 username, password = user_pass_prompt()

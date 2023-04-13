@@ -60,9 +60,11 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         }
         query = 'SELECT message, from_user, sender_name, datetime FROM Missed WHERE user_id=%(id)s'
         cur.execute(query, data)
-        cur.fetchall()
+        message_list = cur.fetchall()
 
-        # TODO: Display missed messages with Kafka
+        for (text, from_user, sender, date) in message_list:
+            if from_user ==  1:
+                self.message_receiver(message_sender=sender, message_text=text, message_date=str(date), message_receiver_id=str(user_id))
 
     def get_user(self, conn, cur, token):
         # Check if access token is valid
@@ -114,14 +116,13 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             cur.close()
             conn.close()
             return chatRPC_pb2.Response(text=response_message, status=status)
-        
+
         # Get user ID if exists
         data = {
             'username': request.blocked_user
         }
-        query = 'SELECT user_id FROM User WHERE username=%(username)s;'
+        query = 'SELECT id FROM User WHERE username=%(username)s;'
         cur.execute(query, data)
-        
         if cur.rowcount == 0:
             response_message = 'User does not exist.'
             cur.close()
