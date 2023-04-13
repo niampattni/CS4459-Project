@@ -28,6 +28,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         self.chats = []
         self.consumer = Consumer(consumer_conf)
         self.producer = Producer(producer_conf)
+        self.missed = 0
         consume_loop = threading.Thread(target=self.consumer_loop)
         consume_loop.start()
     
@@ -39,7 +40,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                 message = json.loads(msg.value())
             except:
                 continue
-            self.message_receiver(message["sender"], message["message"], message["date"], message["receiver_id"], message["channel"] is not None, message["channel"])
+            self.message_receiver(message["sender"], message["message"], message["date"], message["receiver_id"], message["channel"] is not 'no-channel', message["channel"])
 
     def message_receiver(self, message_sender, message_text, message_date, message_receiver_id, message_from_channel=False, message_channel_name=None):
         if message_from_channel:
@@ -58,15 +59,17 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         data = {
             'id': user_id
         }
-        query = 'SELECT message, from_user, sender_name, datetime, channel_name FROM Missed WHERE user_id=%(id)s'
+        query = 'SELECT message, from_user, sender_name, datetime, channel_name FROM Missed WHERE user_id=%(id)s;'
         cur.execute(query, data)
         results = cur.fetchall()
-
+        self.missed = len(results)
         for (text, from_user, sender, date, channel_name) in results:
             if from_user == 0:
-                self.message_receiver(message_sender=sender, message_text=text, message_date=str(date), message_receiver_id=user_id, message_from_channel=True, message_channel_name=channel_name)
+                self.message_receiver(message_sender=sender, message_text=text, message_date=date.strftime('%m/%d/%Y'), message_receiver_id=user_id, message_from_channel=True, message_channel_name=channel_name)
             else:
-                self.message_receiver(message_sender=sender, message_text=text, message_date=str(date), message_receiver_id=user_id)
+                self.message_receiver(message_sender=sender, message_text=text, message_date=date.strftime('%m/%d/%Y'), message_receiver_id=user_id)
+        query = 'DELETE FROM Missed WHERE user_id=%(id)s;'
+        cur.execute(query, data)
 
     def get_user(self, conn, cur, token):
         # Check if access token is valid
@@ -199,7 +202,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
     def MessageStream(self, request_iterator, ctx):
         conn, cur = self.get_db()
         user = self.get_user(conn, cur, request_iterator.access_token)
-        last_index = 0
+        last_index = len(self.chats)-1
         while True:
             while len(self.chats) > last_index+1:
                 last_index += 1
@@ -208,6 +211,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                     yield message
 
     def RegisterUser(self, request, ctx):
+        print('registering')
         conn, cur = self.get_db()
 
         data = {
@@ -324,18 +328,17 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
             return chatRPC_pb2.Response(text=response_message, status=status)
         
         recipient_id = cur.fetchone()[0]
-        data = {
-            'id': recipient_id
-        }
-        query = 'SELECT user_id FROM Online WHERE user_id=%(id)s;'
-        cur.execute(query, data)
-
         if self.is_blocked(conn, cur, user[0], recipient_id):
             response_message = 'User is blocked.'
             status = False
             cur.close()
             conn.close()
             return chatRPC_pb2.Response(text=response_message, status=status)
+        data = {
+            'id': recipient_id
+        }
+        query = 'SELECT user_id FROM Online WHERE user_id=%(id)s;'
+        cur.execute(query, data)
 
         # If user is offline then save message to send later, else send it
         if cur.rowcount == 0:
@@ -357,7 +360,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                 'message': request.message,
                 'receiver_id': recipient_id,
                 'date': str(int(datetime.now().timestamp())),
-                'channel': None
+                'channel': 'no-channel'
             }))
             self.producer.flush()
         
