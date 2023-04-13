@@ -6,6 +6,7 @@ import os
 import chatRPC_pb2
 import chatRPC_pb2_grpc
 
+<<<<<<< HEAD
 def register_account(stub, username, password):
     register_response = stub.RegisterUser(chatRPC_pb2.RegisterRequest(username=username, password=password))
     if not register_response.status:
@@ -24,6 +25,13 @@ def login(stub, username, password):
         cert.write(auth_token + '\n')
     
     return auth_token
+=======
+def message_stream(stub):
+        """
+        This method will be ran in a separate thread as the main/ui thread, because the for-in call is blocking
+        when waiting for new messages
+        """
+>>>>>>> 7ca4f33 (First attempt at kafka integration)
 
 def user_pass_prompt():
     print('Please enter your desired username:')
@@ -136,11 +144,36 @@ def incoming_message_stream(stub):
         print(response.text)
 
 def user_requests(stub):
+<<<<<<< HEAD
     auth_token = check_auth(stub)
 
     while(True):
         first_loop = True
         if auth_token == None:
+=======
+
+    authorized = False
+    
+    if os.path.exists("auth.txt"):
+        
+        key_file = open("auth.txt","r")
+
+        username = key_file.readline().strip()
+        key = key_file.readline().strip()
+
+        # test = stub.ChannelPost(chatRPC_pb2.ChannelPostRequest(username = username, channel_name = "test", message = "", key = key))
+
+        # if test.text != "Unauthenticated.":
+            
+        #     authorized = True
+
+    first_loop = True
+
+    while(True):
+
+        if authorized is False:
+            
+>>>>>>> 7ca4f33 (First attempt at kafka integration)
             print('Welcome to the chat application.')
             print('Would you like to register a new account? Type yes, or no.')
             register_account = input().lower().strip()
@@ -164,8 +197,31 @@ def user_requests(stub):
             print('Enter help for available actions and channels.')
             first_loop = False
         
+<<<<<<< HEAD
         action = input().strip().split()
         if len(action) == 0:
+=======
+        action = input().strip().split(' ')
+        
+        if not action:
+            continue
+
+
+        if action[0].lower().strip() == 'help':
+            
+            print('''
+            You can take the following actions:\n
+            dm [username] [message] - to direct message a user\n
+            post [channel] [message] - to post to a channel\n
+            watch [channel] - to begin watching a channel\n
+            unwatch [channel] - to stop watching a channel\n
+            block [username] - to block a user\n
+            unblock [username] - to unblock a blocked user\n
+            -----------------------------------------------\n
+            The following channels are available to you:\n
+            ...
+            ''')
+>>>>>>> 7ca4f33 (First attempt at kafka integration)
             continue
         
         action[0] = action[0].lower()        
@@ -173,12 +229,76 @@ def user_requests(stub):
             print("That is not a valid action, please retry or say 'help' for more info.")
             continue
 
+<<<<<<< HEAD
+=======
+        elif len(action) < 2 and action[0] in  ["watch", "unwatch", "block", "unblock"]:
+            print("You are missing information in your action.")
+            continue
+
+        elif len(action) < 3 and action[0] in ["dm","post"]:
+            print("You are missing information in your action.")
+            continue
+
+        else:
+
+            i = 1
+            while action[i] == "":
+                del action[i]
+            
+            if action[0] in ["dm", "post"]:
+
+                i =  2
+                while action[i] == "":
+                    del action[i]
+
+>>>>>>> 7ca4f33 (First attempt at kafka integration)
         if action[0] == 'dm':
             direct_message(stub, action, auth_token)
         elif action[0] == 'post':
+<<<<<<< HEAD
             channel_post(stub, action, auth_token)
         elif action[0] == 'watch':
             watch_channel(stub, action, auth_token)
+=======
+
+            try:
+
+                channel = action[1]
+                message = ""
+                for word in action[2:]: message = message + " " + word
+
+            except IndexError:
+
+                print('You are missing information in your action.')
+                continue
+
+            post_response = stub.ChannelPost(chatRPC_pb2.ChannelPostRequest(channel_name = channel, message = message, access_token = key))
+
+            if post_response.status == False:
+
+                print(post_response.text)
+
+        elif action[0] == 'watch':
+
+            try:
+
+                channel = action[1]
+            
+            except IndexError:
+
+                print('You are missing information in your action.')
+                continue
+
+            watch_response = stub.Watch(chatRPC_pb2.WatchRequest(channel_name = channel, access_token = key))
+
+            if watch_response.status == False:
+                print(watch_response.text)
+
+            else:
+
+                print('watching channel: ' + channel)
+        
+>>>>>>> 7ca4f33 (First attempt at kafka integration)
         elif action[0] == 'unwatch':
             unwatch_channel(stub, action, auth_token)        
         elif action[0] == 'block':
@@ -189,7 +309,15 @@ def user_requests(stub):
             get_help()
 
 def run():
+<<<<<<< HEAD
     with grpc.insecure_channel('localhost:3001') as channel:
+=======
+    
+    port_number = '3001'
+
+    with grpc.insecure_channel('localhost:' + port_number) as channel:
+
+>>>>>>> 7ca4f33 (First attempt at kafka integration)
         stub = chatRPC_pb2_grpc.ChatServiceStub(channel)
         threading.Thread(target=incoming_message_stream, args=(stub), daemon=True).start()
         user_requests(stub)
