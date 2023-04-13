@@ -58,12 +58,15 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         data = {
             'id': user_id
         }
-        query = 'SELECT message, from_user, sender_name, datetime FROM Missed WHERE user_id=%(id)s'
+        query = 'SELECT message, from_user, sender_name, datetime, channel_name FROM Missed WHERE user_id=%(id)s'
         cur.execute(query, data)
         results = cur.fetchall()
 
-        for result in results:
-            self.chats.append(chatRPC_pb2.MessageResponse(sender=result[2], text=result[0], date=result[3], receiver_id=user_id))
+        for (text, from_user, sender, date, channel_name) in results:
+            if from_user == 0:
+                self.message_receiver(message_sender=sender, message_text=text, message_date=str(date), message_receiver_id=user_id, message_from_channel=True, message_channel_name=channel_name)
+            else:
+                self.message_receiver(message_sender=sender, message_text=text, message_date=str(date), message_receiver_id=user_id)
 
     def get_user(self, conn, cur, token):
         # Check if access token is valid
@@ -460,7 +463,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         return self.watch_helper(request, False)
 
 def server():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     chatRPC_pb2_grpc.add_ChatServiceServicer_to_server(ChatAppManager(), server)
     server.add_insecure_port('[::]:3001')
     server.start()
