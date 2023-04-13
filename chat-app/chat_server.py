@@ -211,6 +211,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                     yield message
 
     def RegisterUser(self, request, ctx):
+        print('registering')
         conn, cur = self.get_db()
 
         data = {
