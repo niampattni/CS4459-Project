@@ -11,39 +11,40 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rchatRPC.proto\"\x07\n\x05\x45mpty\"i\n\x0fMessageResponse\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\x0c\n\x04\x64\x61te\x18\x03 \x01(\t\x12\x19\n\x0c\x63hannel_name\x18\x05 \x01(\tH\x00\x88\x01\x01\x42\x0f\n\r_channel_name\"5\n\x0fRegisterRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"%\n\rLogoutRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\"Q\n\x12\x43hannelPostRequest\x12\x14\n\x0c\x63hannel_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x03 \x01(\t\"P\n\x14\x44irectMessageRequest\x12\x11\n\trecipient\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x03 \x01(\t\":\n\x0cWatchRequest\x12\x14\n\x0c\x63hannel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\"<\n\x0eUnwatchRequest\x12\x14\n\x0c\x63hannel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\":\n\x0c\x42lockRequest\x12\x14\n\x0c\x62locked_user\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\"<\n\x0eUnblockRequest\x12\x14\n\x0c\x62locked_user\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\"(\n\x08Response\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\x08\x32\xa3\x03\n\x0b\x43hatService\x12+\n\x0cRegisterUser\x12\x10.RegisterRequest\x1a\t.Response\x12!\n\x05Login\x12\r.LoginRequest\x1a\t.Response\x12#\n\x06Logout\x12\x0e.LogoutRequest\x1a\t.Response\x12-\n\x0b\x43hannelPost\x12\x13.ChannelPostRequest\x1a\t.Response\x12\x31\n\rDirectMessage\x12\x15.DirectMessageRequest\x1a\t.Response\x12!\n\x05Watch\x12\r.WatchRequest\x1a\t.Response\x12%\n\x07Unwatch\x12\x0f.UnwatchRequest\x1a\t.Response\x12!\n\x05\x42lock\x12\r.BlockRequest\x1a\t.Response\x12%\n\x07Unblock\x12\x0f.UnblockRequest\x1a\t.Response\x12)\n\rMessageStream\x12\x06.Empty\x1a\x10.MessageResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rchatRPC.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x07\n\x05\x45mpty\"i\n\x0fMessageResponse\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\x0c\n\x04\x64\x61te\x18\x03 \x01(\t\x12\x19\n\x0c\x63hannel_name\x18\x05 \x01(\tH\x00\x88\x01\x01\x42\x0f\n\r_channel_name\"5\n\x0fRegisterRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"%\n\rLogoutRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\"Q\n\x12\x43hannelPostRequest\x12\x14\n\x0c\x63hannel_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x03 \x01(\t\"P\n\x14\x44irectMessageRequest\x12\x11\n\trecipient\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x03 \x01(\t\":\n\x0cWatchRequest\x12\x14\n\x0c\x63hannel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\"<\n\x0eUnwatchRequest\x12\x14\n\x0c\x63hannel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\":\n\x0c\x42lockRequest\x12\x14\n\x0c\x62locked_user\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\"<\n\x0eUnblockRequest\x12\x14\n\x0c\x62locked_user\x18\x01 \x01(\t\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\t\"(\n\x08Response\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\x08\x32\xb5\x03\n\x0b\x43hatService\x12+\n\x0cRegisterUser\x12\x10.RegisterRequest\x1a\t.Response\x12!\n\x05Login\x12\r.LoginRequest\x1a\t.Response\x12#\n\x06Logout\x12\x0e.LogoutRequest\x1a\t.Response\x12-\n\x0b\x43hannelPost\x12\x13.ChannelPostRequest\x1a\t.Response\x12\x31\n\rDirectMessage\x12\x15.DirectMessageRequest\x1a\t.Response\x12!\n\x05Watch\x12\r.WatchRequest\x1a\t.Response\x12%\n\x07Unwatch\x12\x0f.UnwatchRequest\x1a\t.Response\x12!\n\x05\x42lock\x12\r.BlockRequest\x1a\t.Response\x12%\n\x07Unblock\x12\x0f.UnblockRequest\x1a\t.Response\x12;\n\rMessageStream\x12\x16.google.protobuf.Empty\x1a\x10.MessageResponse0\x01\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'chatRPC_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _EMPTY._serialized_start=17
-  _EMPTY._serialized_end=24
-  _MESSAGERESPONSE._serialized_start=26
-  _MESSAGERESPONSE._serialized_end=131
-  _REGISTERREQUEST._serialized_start=133
-  _REGISTERREQUEST._serialized_end=186
-  _LOGINREQUEST._serialized_start=188
-  _LOGINREQUEST._serialized_end=238
-  _LOGOUTREQUEST._serialized_start=240
-  _LOGOUTREQUEST._serialized_end=277
-  _CHANNELPOSTREQUEST._serialized_start=279
-  _CHANNELPOSTREQUEST._serialized_end=360
-  _DIRECTMESSAGEREQUEST._serialized_start=362
-  _DIRECTMESSAGEREQUEST._serialized_end=442
-  _WATCHREQUEST._serialized_start=444
-  _WATCHREQUEST._serialized_end=502
-  _UNWATCHREQUEST._serialized_start=504
-  _UNWATCHREQUEST._serialized_end=564
-  _BLOCKREQUEST._serialized_start=566
-  _BLOCKREQUEST._serialized_end=624
-  _UNBLOCKREQUEST._serialized_start=626
-  _UNBLOCKREQUEST._serialized_end=686
-  _RESPONSE._serialized_start=688
-  _RESPONSE._serialized_end=728
-  _CHATSERVICE._serialized_start=731
-  _CHATSERVICE._serialized_end=1150
+  _EMPTY._serialized_start=46
+  _EMPTY._serialized_end=53
+  _MESSAGERESPONSE._serialized_start=55
+  _MESSAGERESPONSE._serialized_end=160
+  _REGISTERREQUEST._serialized_start=162
+  _REGISTERREQUEST._serialized_end=215
+  _LOGINREQUEST._serialized_start=217
+  _LOGINREQUEST._serialized_end=267
+  _LOGOUTREQUEST._serialized_start=269
+  _LOGOUTREQUEST._serialized_end=306
+  _CHANNELPOSTREQUEST._serialized_start=308
+  _CHANNELPOSTREQUEST._serialized_end=389
+  _DIRECTMESSAGEREQUEST._serialized_start=391
+  _DIRECTMESSAGEREQUEST._serialized_end=471
+  _WATCHREQUEST._serialized_start=473
+  _WATCHREQUEST._serialized_end=531
+  _UNWATCHREQUEST._serialized_start=533
+  _UNWATCHREQUEST._serialized_end=593
+  _BLOCKREQUEST._serialized_start=595
+  _BLOCKREQUEST._serialized_end=653
+  _UNBLOCKREQUEST._serialized_start=655
+  _UNBLOCKREQUEST._serialized_end=715
+  _RESPONSE._serialized_start=717
+  _RESPONSE._serialized_end=757
+  _CHATSERVICE._serialized_start=760
+  _CHATSERVICE._serialized_end=1197
 # @@protoc_insertion_point(module_scope)

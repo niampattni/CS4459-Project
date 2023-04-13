@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 message Empty {}
 
@@ -71,5 +72,5 @@ service ChatService{
   rpc Unwatch(UnwatchRequest) returns (Response);
   rpc Block(BlockRequest) returns (Response);
   rpc Unblock(UnblockRequest) returns (Response);
-  rpc MessageStream(Empty) returns (MessageResponse);
+  rpc MessageStream(google.protobuf.Empty) returns (stream MessageResponse);
 } 

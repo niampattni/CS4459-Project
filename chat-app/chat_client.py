@@ -53,7 +53,7 @@ def login(stub, username, password):
         return None
 
     auth_token = login_response.text
-    with open('auth.crt', 'rw') as cert:
+    with open('auth.crt', 'w') as cert:
         cert.write(auth_token + '\n')
     
     return auth_token
