@@ -3,7 +3,6 @@
 import grpc
 
 import chatRPC_pb2 as chatRPC__pb2
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class ChatServiceStub(object):
@@ -62,7 +61,7 @@ class ChatServiceStub(object):
                 )
         self.MessageStream = channel.unary_stream(
                 '/ChatService/MessageStream',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                request_serializer=chatRPC__pb2.MessageStreamRequest.SerializeToString,
                 response_deserializer=chatRPC__pb2.MessageResponse.FromString,
                 )
 
@@ -180,7 +179,7 @@ def add_ChatServiceServicer_to_server(servicer, server):
             ),
             'MessageStream': grpc.unary_stream_rpc_method_handler(
                     servicer.MessageStream,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    request_deserializer=chatRPC__pb2.MessageStreamRequest.FromString,
                     response_serializer=chatRPC__pb2.MessageResponse.SerializeToString,
             ),
     }
@@ -358,7 +357,7 @@ class ChatService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/ChatService/MessageStream',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            chatRPC__pb2.MessageStreamRequest.SerializeToString,
             chatRPC__pb2.MessageResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

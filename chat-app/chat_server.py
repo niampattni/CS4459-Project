@@ -200,12 +200,15 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         return chatRPC_pb2.Response(text=response_message, status=status)
 
     def MessageStream(self, request_iterator, ctx):
+        conn, cur = self.get_db()
+        user = self.get_user(conn, cur, request_iterator.access_token)
         last_index = 0
         while True:
             while len(self.chats) > last_index:
-                message = self.chats[last_index]
                 last_index += 1
-                yield message
+                if self.chats[last_index].receiver_id == user[0]:
+                    message = self.chats[last_index]
+                    yield message
 
     def RegisterUser(self, request, ctx):
         conn, cur = self.get_db()

@@ -1,7 +1,8 @@
 syntax = "proto3";
-import "google/protobuf/empty.proto";
 
-message Empty {}
+message MessageStreamRequest {
+  string access_token = 1;
+}
 
 message MessageResponse {
   string sender = 1;
@@ -73,5 +74,5 @@ service ChatService{
   rpc Unwatch(UnwatchRequest) returns (Response);
   rpc Block(BlockRequest) returns (Response);
   rpc Unblock(UnblockRequest) returns (Response);
-  rpc MessageStream(google.protobuf.Empty) returns (stream MessageResponse);
+  rpc MessageStream(MessageStreamRequest) returns (stream MessageResponse);
 } 

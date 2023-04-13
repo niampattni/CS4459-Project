@@ -1,4 +1,3 @@
-from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Optional as _Optional
@@ -33,10 +32,6 @@ class DirectMessageRequest(_message.Message):
     recipient: str
     def __init__(self, recipient: _Optional[str] = ..., message: _Optional[str] = ..., access_token: _Optional[str] = ...) -> None: ...
 
-class Empty(_message.Message):
-    __slots__ = []
-    def __init__(self) -> None: ...
-
 class LoginRequest(_message.Message):
     __slots__ = ["password", "username"]
     PASSWORD_FIELD_NUMBER: _ClassVar[int]
@@ -52,16 +47,24 @@ class LogoutRequest(_message.Message):
     def __init__(self, access_token: _Optional[str] = ...) -> None: ...
 
 class MessageResponse(_message.Message):
-    __slots__ = ["channel_name", "date", "sender", "text"]
+    __slots__ = ["channel_name", "date", "receiver_id", "sender", "text"]
     CHANNEL_NAME_FIELD_NUMBER: _ClassVar[int]
     DATE_FIELD_NUMBER: _ClassVar[int]
+    RECEIVER_ID_FIELD_NUMBER: _ClassVar[int]
     SENDER_FIELD_NUMBER: _ClassVar[int]
     TEXT_FIELD_NUMBER: _ClassVar[int]
     channel_name: str
     date: str
+    receiver_id: str
     sender: str
     text: str
-    def __init__(self, sender: _Optional[str] = ..., text: _Optional[str] = ..., date: _Optional[str] = ..., channel_name: _Optional[str] = ...) -> None: ...
+    def __init__(self, sender: _Optional[str] = ..., text: _Optional[str] = ..., date: _Optional[str] = ..., receiver_id: _Optional[str] = ..., channel_name: _Optional[str] = ...) -> None: ...
+
+class MessageStreamRequest(_message.Message):
+    __slots__ = ["access_token"]
+    ACCESS_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    access_token: str
+    def __init__(self, access_token: _Optional[str] = ...) -> None: ...
 
 class RegisterRequest(_message.Message):
     __slots__ = ["password", "username"]
