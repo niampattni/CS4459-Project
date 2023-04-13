@@ -371,7 +371,7 @@ def run():
     with grpc.insecure_channel('localhost:3001') as channel:
 >>>>>>> 2d672b5 (Switch to new client)
         stub = chatRPC_pb2_grpc.ChatServiceStub(channel)
-        threading.Thread(target=incoming_message_stream, args=(stub), daemon=True).start()
+        threading.Thread(target=incoming_message_stream, args=[stub], daemon=True).start()
         user_requests(stub)
 
 run()
