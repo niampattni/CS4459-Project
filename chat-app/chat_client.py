@@ -7,12 +7,16 @@ import chatRPC_pb2
 import chatRPC_pb2_grpc
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2d672b5 (Switch to new client)
 def register_account(stub, username, password):
     register_response = stub.RegisterUser(chatRPC_pb2.RegisterRequest(username=username, password=password))
     if not register_response.status:
         print('That username already exists. Please enter a different username.')
         return False
     return True
+<<<<<<< HEAD
 
 def login(stub, username, password):
     login_response = stub.Login(chatRPC_pb2.LoginRequest(username=username, password=password))
@@ -40,6 +44,28 @@ def user_pass_prompt():
     password = input()
     return username, password
 
+=======
+
+def login(stub, username, password):
+    login_response = stub.Login(chatRPC_pb2.LoginRequest(username=username, password=password))
+    if not login_response.status:
+        print('Your username or password is incorrect. Please try again.')
+        return None
+
+    auth_token = login_reponse.text
+    with open('auth.crt', 'rw') as cert:
+        cert.write(auth_token + '\n')
+    
+    return auth_token
+
+def user_pass_prompt():
+    print('Please enter your desired username:')
+    username = input()
+    print('Please enter your desired password:')
+    password = input()
+    return username, password
+
+>>>>>>> 2d672b5 (Switch to new client)
 def direct_message(stub, params, token):
     try:
         recipient = params[1]
@@ -145,6 +171,7 @@ def incoming_message_stream(stub):
 
 def user_requests(stub):
 <<<<<<< HEAD
+<<<<<<< HEAD
     auth_token = check_auth(stub)
 
     while(True):
@@ -174,6 +201,13 @@ def user_requests(stub):
         if authorized is False:
             
 >>>>>>> 7ca4f33 (First attempt at kafka integration)
+=======
+    auth_token = check_auth(stub)
+
+    while(True):
+        first_loop = True
+        if auth_token == None:
+>>>>>>> 2d672b5 (Switch to new client)
             print('Welcome to the chat application.')
             print('Would you like to register a new account? Type yes, or no.')
             register_account = input().lower().strip()
@@ -197,6 +231,7 @@ def user_requests(stub):
             print('Enter help for available actions and channels.')
             first_loop = False
         
+<<<<<<< HEAD
 <<<<<<< HEAD
         action = input().strip().split()
         if len(action) == 0:
@@ -222,6 +257,10 @@ def user_requests(stub):
             ...
             ''')
 >>>>>>> 7ca4f33 (First attempt at kafka integration)
+=======
+        action = input().strip().split()
+        if len(action) == 0:
+>>>>>>> 2d672b5 (Switch to new client)
             continue
         
         action[0] = action[0].lower()        
@@ -229,6 +268,7 @@ def user_requests(stub):
             print("That is not a valid action, please retry or say 'help' for more info.")
             continue
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         elif len(action) < 2 and action[0] in  ["watch", "unwatch", "block", "unblock"]:
@@ -299,6 +339,14 @@ def user_requests(stub):
                 print('watching channel: ' + channel)
         
 >>>>>>> 7ca4f33 (First attempt at kafka integration)
+=======
+        if action[0] == 'dm':
+            direct_message(stub, action, auth_token)
+        elif action[0] == 'post':
+            channel_post(stub, action, auth_token)
+        elif action[0] == 'watch':
+            watch_channel(stub, action, auth_token)
+>>>>>>> 2d672b5 (Switch to new client)
         elif action[0] == 'unwatch':
             unwatch_channel(stub, action, auth_token)        
         elif action[0] == 'block':
@@ -310,6 +358,7 @@ def user_requests(stub):
 
 def run():
 <<<<<<< HEAD
+<<<<<<< HEAD
     with grpc.insecure_channel('localhost:3001') as channel:
 =======
     
@@ -318,6 +367,9 @@ def run():
     with grpc.insecure_channel('localhost:' + port_number) as channel:
 
 >>>>>>> 7ca4f33 (First attempt at kafka integration)
+=======
+    with grpc.insecure_channel('localhost:3001') as channel:
+>>>>>>> 2d672b5 (Switch to new client)
         stub = chatRPC_pb2_grpc.ChatServiceStub(channel)
         threading.Thread(target=incoming_message_stream, args=(stub), daemon=True).start()
         user_requests(stub)
