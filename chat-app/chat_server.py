@@ -41,13 +41,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
                 continue
             self.message_receiver(message["sender"], message["message"], message["date"], message["receiver_id"], message["channel"] is not None, message["channel"])
 
-    
-<<<<<<< HEAD
-    def message_receiver(self, message_sender, message_text, message_date, message_from_channel=False, message_channel_name=None):
-        # Kafka message receiver, adds chats to queue to be streamed out
-=======
     def message_receiver(self, message_sender, message_text, message_date, message_receiver_id, message_from_channel=False, message_channel_name=None):
->>>>>>> a8547ac (Add receiver to messages)
         if message_from_channel:
             self.chats.append(chatRPC_pb2.MessageResponse(sender=message_sender, text=message_text, date=message_date, receiver_id=message_receiver_id, channel_name=message_channel_name))
         else:
