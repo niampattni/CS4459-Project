@@ -198,7 +198,7 @@ def user_requests(stub):
             get_help()
 
 def run():
-    with grpc.insecure_channel('localhost:3001') as channel:
+    with grpc.insecure_channel('localhost:5001') as channel:
         stub = chatRPC_pb2_grpc.ChatServiceStub(channel)
         user_requests(stub)
 
