@@ -14,6 +14,7 @@ class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
         self.chats = []
     
     def message_receiver(self, message_sender, message_text, message_date, message_from_channel=False, message_channel_name=None):
+        # Kafka message receiver, adds chats to queue to be streamed out
         if message_from_channel:
             self.chats.append(chatRPC_pb2.MessageResponse(from_name=message_from, text=message_text, date=message_date, channel_name=message_channel_name))
         else:
