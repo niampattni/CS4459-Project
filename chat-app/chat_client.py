@@ -27,7 +27,6 @@ def login(stub, username, password):
 
 def logout(stub, token):
     logout_response = stub.Logout(chatRPC_pb2.LogoutRequest(access_token=token))
-    os.remove('auth.crt')
     print('See you again soon!')
 
 def user_pass_prompt():
@@ -127,16 +126,9 @@ def get_help():
         ...
         ''')
 
-def check_auth(stub):
-    if os.path.exists('auth.crt'):
-        with open('auth.crt', 'r') as cert:
-            auth_token = cert.readline().strip()
-            return auth_token
-    return None
-
 def incoming_message_stream(stub, token):
     for response in stub.MessageStream(chatRPC_pb2.MessageStreamRequest(access_token=token)):
-        print(response.text)
+        print(response.date, response.sender, ':', response.text)
 
 def user_requests(stub):
     auth_token = None
