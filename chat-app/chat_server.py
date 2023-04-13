@@ -6,433 +6,412 @@ import chatRPC_pb2_grpc
 import sys
 import os
 import mysql.connector as db
-
+from datetime import datetime
 
 class ChatAppManager(chatRPC_pb2_grpc.ChatServiceServicer):
 
     def __init__(self):
-        self.conn = db.connect(host='localhost', port=3306, user='root', password=os.environ.get('MYSQL_PASSWORD'))
-        self.cur = self.conn.cursor()
-
-
-
-    def RegisterUser(self, request, context):
-        user_id = request.user_id
-        password = request.password
-
-        # needs key
-
-        sql = "insert into users values(?, ?, NULL, datetime('now'), 0)"
-        params = (user_id, password)
-
-        try:
-            cur.execute(sql, params)
-            conn.commit()
-
-            response_message = "Your account was successfully registered."
-            status = True
-
-        except Error as e:
-
-            response_message = "This username already exists, please use another username."
-            status = False
-
-        return chatRPC_pb2.Response(text =  response_message,status = status)
-
-    def Login(self,request, context):
-
-        user_id = request.user_id
-        password = request.password
-
-        sql = "select id, password,key from users where id = ?"
-        params = (user_id,)
-        cur.execute(sql,params)
-
-        row = cur.fetchall()
-
-        if not row:
-            return chatRPC_pb2.Response(text = "User does not exist", status = False)
-        
-        else:
-            
-            row = row[0]
-
-            if password == row[1]:
-                
-                key = row[2]
-
-                set_online_sql = "update users set onlineoffline = 1 where id = ?"
-                params = (user_id,)
-
-                cur.execute(set_online_sql, params)
-                conn.commit()
-
-                return chatRPC_pb2.Response(text = key, status = True) # SUCCESS
-            
-            else:
-
-                return chatRPC_pb2.Response(text = "Incorrect Password", status = False)
-
-
-    def DirectMessage(self, request, context):
-
-        sender = request.sender_id
-        recipient = request.recipient
-        message = request.message
-        key = request.key
-
-        params = (sender,)
-
-        check_key_sql = "select key, onlineoffline from users where id =?"
-
-        cur.execute(check_key_sql,params)
-
-        key_row = cur.fetchall()
-
-        if not key_row:
-            
-            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
-
-        else:
-
-            key_row = key_row[0]
-
-            if key != key_row[0]:
-
-                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
-
-            elif key == key_row[0]:
-
-                # check_online_sql = "select onlineoffline from users where id = ?"
-                # params = (recipient,)
-
-                # cur.execute(check_online_sql, params)
-
-                # online_row = cur.fetchall()
-
-                online_row = key_row[1]
-
-                if online_row == 0:
-
-                    insert_dm_sql = "insert into messages values(?, ?, NULL, ?, datetime('now'), 0)"
-
-                    try:
-                        params = (sender, recipient, message)
-
-                        cur.execute(insert_dm_sql, params)
-                        conn.commit()
-
-                        return chatRPC_pb2.Response(text = "User is not online, stored message", status = False) # STORED
-
-                    
-                    except Error as e:
-
-                        return chatRPC_pb2.Response(text = "Error: Failed to store message", status = False)
-                
-                elif online_row == 1:
-                    
-                    insert_dm_sql = "insert into messages values(?, ?, NULL, ?, datetime('now'), 1)"
-
-                    try:
-                        params = (sender, recipient, message)
-
-                        cur.execute(insert_dm_sql, params)
-                        conn.commit()
-
-                        return chatRPC_pb2.Response(text = "sent_message", status = True) # SUCCESS
-
-                    
-                    except Error as e:
-
-                        return chatRPC_pb2.Response(text = "Error: Failed to send message", status = False)
+        self.chats = []
     
+    def message_receiver(self, message_from, message_text, message_date):
+        self.chats.append(chatRPC_pb2.MessageResponse(from=message_from, text=message_text, date=message_date))
+
+    def get_db(self):
+        # Open connection to DB and return cursor
+        conn = db.connect(host='chat-app-db', port=3306, user='chat-app', password=os.environ.get('MYSQL_PASSWORD'), database='ChatApp')
+        cur = conn.cursor()
+        return conn, cur
     
-    def ChannelPost(self, request, context):
-
-        """
-         string user_id = 1;
-        string channel = 2;
-        string message = 3;
-        string key = 4;
-        """
-
-        user_id = request.user_id
-        channel = request.channel
-        message = request.message
-        key = request.key
-
-        check_key_sql = "select key from users where id =?"
-        params = (sender,)
-
-        cur.execute(check_key_sql,params)
-
-        key_row = cur.fetchall()
-
-        if not key_row:
-            
-            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
-
-        else:
-
-            key_row = key_row[0]
-
-            if key != key_row[0]:
-
-                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
-
-            elif key == key_row[0]:
-                
-                check_channel_exists_sql = "select name from channels where name = ?"
-                params = (channel,)
-
-                cur.execute(check_channel_exists_sql, params)
-                
-                channel_row = cur.fetchall()
-
-                if not channel_row:
-
-                    return chatRPC_pb2.Response(text = "Channel does not exist", status = False)
-                
-                else:
-
-                    channel_row = channel_row[0]
-
-                    channel_msg_sql = "insert into messages values(?, NULL, ?, ?, datetime('now'), 1)"
-
-                    try:
-                        
-                        params = (sender, channel, message)
-
-                        cur.execute(channel_msg_sql, params)
-                        conn.commit()
-
-                        return chatRPC_pb2.Response(text = "sent_message", status = True) # SUCCESS
-
-                    
-                    except Error as e:
-
-                        return chatRPC_pb2.Response(text = "Error: Failed to post to channel", status = False)
-
-    def Block(self, request, context):
-
-        # string blocker_id = 1;
-        # string blocked_id = 2;
-
-        blocker = request.blocker_id
-        blocked = request.blocked_id
-
-        check_key_sql = "select key from users where id =?"
-        params = (sender,)
-
-        cur.execute(check_key_sql,params)
-
-        key_row = cur.fetchall()
-
-        if not key_row:
-            
-            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
-
-        else:
-
-            key_row = key_row[0]
-
-            if key != key_row[0]:
-
-                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
-
-            elif key == key_row[0]:
-
-                check_blocker_id = "select id from users where id = ?"
-                params = (blocker,)
-
-                cur.execute(check_blocker_id, params)
-                blocker_row = cur.fetchall()
-
-                if not blocker_row:
-
-                    return chatRPC_pb2.Response(text = "Blocker user ID does not exist", status = False)
-
-                check_blocked_id = "select id from users where id = ?"
-                params = (blocked,)
-
-                cur.execute(check_blocked_id, params)
-                blocked_row = cur.fetchall()
-
-                if not blocked_row:
-
-                    return chatRPC_pb2.Response(text = "Blocked user ID does not exist", status = False)
-
-                block_sql = "insert into blocks values(?, ?, datetime('now'))"
-                params = (blocker, blocked)
-
-                try:
-
-                    cur.execute(block_sql, params)
-                    conn.commit()
-
-                    return chatRPC_pb2.Response(text = "Blocked User", status = True) # SUCCESS
-
-                
-                except Error as e:
-
-                    return chatRPC_pb2.Response(text = "Error: Failed to record block", status = False)
-
-    def Unblock(self, request, context):
-
-        # string blocker_id = 1;
-        # string blocked_id = 2;
-
-        blocker = request.blocker_id
-        blocked = request.blocked_id
-
-        check_key_sql = "select key from users where id =?"
-        params = (sender,)
-
-        cur.execute(check_key_sql,params)
-
-        key_row = cur.fetchall()
-
-        if not key_row:
-            
-            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
-
-        else:
-
-            key_row = key_row[0]
-
-            if key != key_row[0]:
-
-                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
-
-            elif key == key_row[0]:
-
-                check_blocker_id = "select id from users where id = ?"
-                params = (blocker,)
-
-                cur.execute(check_blocker_id, params)
-                blocker_row = cur.fetchall()
-
-                if not blocker_row:
-
-                    return chatRPC_pb2.Response(text = "Blocker user ID does not exist", status = False)
-
-                check_blocked_id = "select id from users where id = ?"
-                params = (blocked,)
-
-                cur.execute(check_blocked_id, params)
-                blocked_row = cur.fetchall()
-
-                if not blocked_row:
-
-                    return chatRPC_pb2.Response(text = "Blocked user ID does not exist", status = False)
-
-                block_sql = "delete from blocks where blocking_user = ? and blocked_user = ?"
-                params = (blocker, blocked)
-
-                try:
-
-                    cur.execute(block_sql, params)
-                    conn.commit()
-
-                    return chatRPC_pb2.Response(text = "Unblocked user", status = True) # SUCCESS
-
-                
-                except Error as e:
-
-                    return chatRPC_pb2.Response(text = "Error: Failed to remove block from record", status = False)
-
-    
-    def Watch(self, request_iterator, context):
-
-        """
-        message watch{
-        string user_id = 1;
-        string channel = 2;
+    def get_missed_messages(self, user_id, cur, conn):
+        # Upon login, retrieve missed messages
+        data = {
+            'id': user_id
         }
-        lastindex = 0
-        # For every client a infinite loop starts (in gRPC's own managed thread)
-        while True:
-            # Check if there are any new messages
-            while len(self.chats) > lastindex:
-                n = self.chats[lastindex]
-                lastindex += 1
-                yield n
-        """
+        query = 'SELECT message, from_user, sender_name, datetime FROM Missed WHERE user_id=%(id)s'
+        cur.execute(query, data)
 
-        user_id = request.user_id
-        channel = request.channel
+        # TODO: Display missed messages with Kafka
 
-        check_key_sql = "select key from users where id =?"
-        params = (sender,)
+    def get_user(self, conn, cur, token):
+        # Check if access token is valid
+        data = {
+            'token': token
+        }
+        query = 'SELECT user_id FROM Online WHERE access_token=%(token)s;'
+        cur.execute(query, data)
 
-        cur.execute(check_key_sql,params)
+        # If invalid token then return None and exit
+        if cur.rowcount == 0:
+            return None
 
-        key_row = cur.fetchall()
+        # If valid token then return User object
+        row = cur.fetchone()
+        data = {
+            'id': row[0]
+        }
+        query = 'SELECT id, username FROM User WHERE id=%(id)s;'
+        cur.execute()
+        return cur.fetchone()
 
-        if not key_row:
-            
-            return chatRPC_pb2.Response(text = "User does not exist.", status = False)
+    def is_blocked(self, conn, cur, user_id, recipient_id):
+        data = {
+            'user_id': user_id,
+            'block_id': recipient_id
+        }
+        query = 'SELECT * FROM Block WHERE user_id=%(user_id)s AND block_id=%(block_id)s;'
+        cur.execute(query, data)
 
+        if cur.rowcount == 0:
+            data = {
+                'user_id': recipient_id,
+                'block_id': user_id
+            }
+            query = 'SELECT * FROM Block WHERE user_id=%(user_id)s AND block_id=%(block_id)s;'
+            cur.execute(query, data)
+
+        return cur.rowcount > 0
+    
+    def block_helper(self, request, block):
+        response_message = ''
+        conn, cur = self.get_db()
+        # Check if logged in
+        user = self.get_user(conn, cur, request.access_token)
+        if user == None:
+            response_message = 'Unauthenticated.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # Get user ID if exists
+        data = {
+            'username': request.blocked_user
+        }
+        query = 'SELECT user_id FROM User WHERE username=%(username)s;'
+        cur.execute(query, data)
+        
+        if cur.rowcount == 0:
+            response_message = 'User does not exist.'
+            cur.close()
+            conn.close()
+            status = True
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # Block/Unblock user
+        data = {
+            'user_id': user[0],
+            'block_id': cur.fetchone()[0]
+        }
+        if block:
+            query = 'INSERT INTO Block (user_id, block_id) VALUES (%(user_id)s, %(block_id)s);'
+            response_message = 'User blocked.'
         else:
+            query = 'DELETE FROM Block WHERE user_id=%(user_id)s AND block_id=%(block_id)s;'
+            response_message = 'User unblocked.'
+        cur.execute(query, data)
+        conn.commit()
 
-            key_row = key_row[0]
+        cur.close()
+        conn.close()
+        status = True
+        return chatRPC_pb2.Response(text=response_message, status=status)
+    
+    def watch_helper(self, request, watch):
+        response_message = ''
+        conn, cur = self.get_db()
+        # Check if logged in
+        user = self.get_user(conn, cur, request.access_token)
+        if user == None:
+            response_message = 'Unauthenticated.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # Get Channel ID if exists
+        data = {
+            'channel': request.channel_name
+        }
+        query = 'SELECT id FROM Channel WHERE channel_name=%(channel)s;'
+        cur.execute(query, data)
 
-            if key != key_row[0]:
+        if cur.rowcount == 0:
+            response_message = 'Channel does not exist.'
+            cur.close()
+            conn.close()
+            status = True
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # Watch/Unwatch channel
+        data = {
+            'user_id': user[0],
+            'channel_id': cur.fetchone()[0],
+        }
+        if watch:
+            query = 'INSERT INTO Watching (user_id, channel_id) VALUES (%(user_id)s, %(channel_id)s);'
+            response_message = 'Watching channel.'
+        else:
+            query = 'DELETE FROM Watching WHERE user_id=%(user_id)s AND channel_id=%(channel_id)s;'
+            response_message = 'Unwatching channel.'
+        cur.execute(query, data)
+        conn.commit()
 
-                return chatRPC_pb2.Response(text = "Incorrect Key", status = False)
+        cur.close()
+        conn.close()
+        status = True
+        return chatRPC_pb2.Response(text=response_message, status=status)
 
-            elif key == key_row[0]:
-                
-                check_channel_exists_sql = "select name from channels where name = ?"
-                params = (channel,)
+    def MessageStream(self, request_iterator, ctx):
+        last_index = 0
+        while True:
+            while len(self.chats) > last_index:
+                message = self.chats[last_index]
+                last_index += 1
+                yield message
 
-                cur.execute(check_channel_exists_sql, params)
-                
-                channel_row = cur.fetchall()
+    def RegisterUser(self, request, ctx):
+        conn, cur = self.get_db()
 
-                if not channel_row:
+        data = {
+            'username': request.username,
+            'password': request.password
+        }
+        query = 'INSERT INTO User (username, password) VALUES (%(username)s, %(password)s);'
 
-                    return chatRPC_pb2.Response(text = "Channel does not exist", status = False)
-                
-                else:
+        # Create User, if user exists then fail
+        try:
+            cur.execute(query, data)
+            conn.commit()
+        except:
+            response_message = 'User already exists.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        response_message = 'Account successfully registered.'
+        status = True
+        cur.close()
+        conn.close()
 
-                    lastindex = 0
+        return chatRPC_pb2.Response(text=response_message, status=status)
 
-                    add_sub_sql = "insert into subscriptions values(?, ?, datetime('now'))"
-                    params = (channel, user_id)
+    def Login(self, request, ctx):
+        conn, cur = self.get_db()
 
-                    try:
-                        cur.execute(add_sub_sql, params)
-                        conn.commit()
+        # Confirm user exists
+        data = {
+            'username': request.username,
+            'password': request.password
+        }
+        query = 'SELECT id FROM User WHERE username=%(username)s AND password=%(password)s;'
+        cur.execute(query, data)
+        
+        if cur.rowcount == 0:
+            response_message = 'Incorrect login info.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
 
-                    except Error as e:
-                        
-                        return chatRPC_pb2.Response(text = "Error: failed to record subscription", status = False)
+        # Check if user has access token (did not log out)
+        data = {
+            'id': cur.fetchone()[0]
+        }
+        query = 'SELECT user_id, access_token FROM Online WHERE user_id=%(id)s;'
+        cur.execute(query, data)
 
-                    while True:
+        # If access token exists then return it
+        if cur.rowcount > 0:
+            response_message = cur.fetchone()[1]
+            status = True
+            self.get_missed_messages(data['id'], cur, conn)
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # If new login, create token and return to user
+        data['token'] = str(hash(username + password) % (10 ** 20))
+        query = 'INSERT INTO Online (user_id, access_token) VALUES(%(id)s, %(token)s);'
+        cur.execute(query, data)
+        conn.commit()
 
+        access_token = data['token']
+        status = True
+        self.get_missed_messages(data['id'], cur, conn) # Get missed messages
+        cur.close()
+        conn.close()
+        return chatRPC_pb2.Response(text=access_token, status=status)
+    
+    def Logout(self, request, ctx):
+        conn, cur = self.get_db()
 
+        # Remove user from Online sessions
+        data = {
+            'token': request.access_token
+        }
+        query = 'DELETE FROM Online WHERE access_token=%(token)s;'
+        cur.execute(query, data)
+        conn.commit()
 
-                        get_channel_posts_sql = "select sender, message from messages where channel = ?"
-                        params = (channel,)
+        response_message = 'User logged out.'
+        status = True
+        cur.close()
+        conn.close()
+        return chatRPC_pb2.Response(text=response_message, status=status)
 
-                        cur.execute(get_channel_posts_sql, params)
+    def DirectMessage(self, request, ctx):
+        conn, cur = self.get_db()
+        # Check if logged in
+        user = self.get_user(conn, cur, request.access_token)
+        if user == None:
+            response_message = 'Unauthenticated.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
 
-                        messages_read = cur.fetchall()
+        # Get recipient user ID if exists
+        data = {
+            'recipient': request.recipient
+        }
+        query = 'SELECT id FROM User WHERE username=%(recipient)s;'
+        cur.execute(query, data)
 
-                        for msg in messages_read:
-                            
-                            self.channel_posts.append(msg)
-                        
-                        while len(self.channel_posts) > lastindex:
+        if cur.rowcount == 0:
+            response_message = 'Recipient does not exist.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        recipient_id = cur.fetchone()[0]
+        data = {
+            'id': recipient_id
+        }
+        query = 'SELECT user_id FROM Online WHERE user_id=%(id)s;'
+        cur.execute(query, data)
 
-                            n = self.channel_posts[lastindex]
-                            lastindex += 1
-                            yield n
+        if self.is_blocked(conn, cur, user[0], recipient_id):
+            response_message = 'User is blocked.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+
+        # If user is offline then save message to send later, else send it
+        if cur.rowcount == 0:
+            data = {
+                'id': recipient_id,
+                'message': request.message,
+                'from_user': 1,
+                'sender': user[1],
+                'datetime': datetime.now().date()
+            }
+            query = 'INSERT INTO Missed (user_id, message, from_user, sender_name, datetime) VALUES (%(id)s, %(message)s, %(from_user)s, %(sender)s, %(datetime)s);'
+            cur.execute()
+            conn.commit()
+            response_message = 'User offline, message stored.'
+        else:
+            response_message = 'User online, message sent.'
+            # TODO: User online, send message with Kafka
+        
+        cur.close()
+        conn.close()
+        status = True
+        return chatRPC_pb2.Response(text=response_message, status=status)    
+    
+    def ChannelPost(self, request, ctx):
+        conn, cur = self.get_db()
+        # Check if logged in
+        user = self.get_user(conn, cur, request.access_token)
+        if user == None:
+            response_message = 'Unauthenticated.'
+            status = False
+            cur.close()
+            conn.close()
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # If channel exists then get channel ID
+        data = {
+            'channel': request.channel_name
+        }
+        query = 'SELECT id FROM Channel WHERE channel_name=%(channel)s;'
+        cur.execute(query, data)
+
+        if cur.rowcount == 0:
+            response_message = 'Channel ' + request.channel_name + ' does not exist.'
+            cur.close()
+            conn.close()
+            status = True
+            return chatRPC_pb2.Response(text=response_message, status=status)
+        
+        # Get list of users in channel
+        data = {
+            'id': cur.fetchone()[0]
+        }
+        query = 'SELECT user_id FROM Watching WHERE channel_id=%(id)s;'
+        cur.execute()
+        
+        recipient_list = cur.fetchall()
+        online_list = []
+
+        # Get list of online users
+        for recipient in recipient_list:
+            data = {
+                'id': recipient
+            }
+            query = 'SELECT * FROM Online WHERE user_id=%(id)s;'
+            cur.execute()
+
+            if cur.rowcount > 0:
+                online_list.append(recipient)
+        
+        # Get list of offline users
+        offline_list = list(set(recipient_list) - set(online_list))
+
+        # Send messages to online users
+        for recipient in online_list:
+            if self.is_blocked(conn, cur, user[0], recipient):
+                continue
+            # TODO: User online, send message with Kafka
+        
+        # Store messages for offline users
+        for recipient in offline_list:
+            if self.is_blocked(conn, cur, user[0], recipient):
+                continue
+            data = {
+                'id': recipient,
+                'message': request.message,
+                'from_user': 0,
+                'sender': user[1],
+                'datetime': datetime.now().date()
+            }
+            query = 'INSERT INTO Missed (user_id, message, from_user, sender_name, datetime) VALUES (%(id)s, %(message)s, %(from_user)s, %(sender)s, %(datetime)s);'
+            cur.execute()
+            conn.commit()
+        
+        response_message = 'Message sent to channel.'
+        cur.close()
+        conn.close()
+        status = True
+        return chatRPC_pb2.Response(text=response_message, status=status)
+
+    def Block(self, request, ctx):
+        return self.block_helper(request, True)
+
+    def Unblock(self, request, ctx):
+        return self.block_helper(request, False)
+
+    def Watch(self, request, ctx):
+        return self.watch_helper(request, True)
+
+    def Unwatch(self, request, ctx):
+        return self.watch_helper(request, False)
 
 def server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=3))
-    chatRPC_pb2_grpc.add_ChatServiceServicer_to_server(ChatAppManager, server)
+    chatRPC_pb2_grpc.add_ChatServiceServicer_to_server(ChatAppManager(), server)
     server.add_insecure_port('[::]:3001')
     server.start()
     server.wait_for_termination()

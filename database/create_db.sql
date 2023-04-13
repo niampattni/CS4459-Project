@@ -1,3 +1,8 @@
+CREATE USER 'chat-app'@'localhost' IDENTIFIED BY 'pass';
+GRANT ALL PRIVILEGES ON *.* TO 'chat-app'@'localhost' WITH GRANT OPTION;
+CREATE USER 'chat-app'@'%' IDENTIFIED BY 'pass';
+GRANT ALL PRIVILEGES ON *.* TO 'chat-app'@'%' WITH GRANT OPTION;
+
 DROP DATABASE IF EXISTS ChatApp;
 CREATE DATABASE ChatApp;
 USE ChatApp;
@@ -11,7 +16,7 @@ CREATE TABLE User (
 
 CREATE TABLE Channel (
     id INT AUTO_INCREMENT,
-    channel_name VARCHAR(50) NOT NULL,
+    channel_name VARCHAR(50) NOT NULL UNIQUE,
     PRIMARY KEY (id)
 );
 
@@ -29,8 +34,9 @@ CREATE TABLE Block (
     FOREIGN KEY (block_id) REFERENCES User(id)
 );
 
-CREATE TABLE Active (
+CREATE TABLE Online (
     user_id INT,
+    access_token VARCHAR(20) NOT NULL UNIQUE,
     FOREIGN KEY (user_id) REFERENCES User(id)
 );
 
@@ -39,6 +45,6 @@ CREATE TABLE Missed (
     message VARCHAR(500) NOT NULL,
     from_user INT NOT NULL,
     sender_name VARCHAR(50) NOT NULL,
-    time DATETIME NOT NULL,
+    datetime DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES User(id)
 );

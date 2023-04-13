@@ -1,51 +1,60 @@
 syntax = "proto3";
 
-package main;
+message Empty {}
 
+message MessageResponse {
+  string from = 1;
+  string text = 2;
+  string date = 3;
+}
 
-message RegisterRequest{
+message RegisterRequest {
   string username = 1;
   string password = 2;
 }
 
-message ChannelPostRequest{
-  string username = 1;
-  string channel_name = 2;
-  string message = 3;
-}
-
-message DirectMessageRequest{
-  string sender = 1;
-  string recipient = 2;
-  string message = 3;
-}
-
-message LoginRequest{
+message LoginRequest {
   string username = 1;
   string password = 2;
 }
 
-message WatchRequest{
-  string username = 1;
-  string channel_name = 2;
+message LogoutRequest {
+  string access_token = 1;
 }
 
-message UnwatchRequest{
-  string username = 1;
-  string channel_name = 2;
+message ChannelPostRequest {
+  string channel_name = 1;
+  string message = 2;
+  string access_token = 3;
 }
 
-message BlockRequest{
-  string username = 1;
-  string blocked_user = 2;
+message DirectMessageRequest {
+  string recipient = 1;
+  string message = 2;
+  string access_token = 3;
 }
 
-message UnblockRequest{
-  string username = 1;
-  string blocked_user = 2;
+message WatchRequest {
+  string channel_name = 1;
+  string access_token = 2;
 }
 
-message Response{
+message UnwatchRequest {
+  string channel_name = 1;
+  string access_token = 2;
+}
+
+message BlockRequest {
+  string blocked_user = 1;
+  string access_token = 2;
+}
+
+message UnblockRequest {
+  string blocked_user = 1;
+  string access_token = 2;
+}
+
+message Response {
   string text = 1;
   bool status = 2;
 }
@@ -53,13 +62,13 @@ message Response{
 
 service ChatService{
   rpc RegisterUser(RegisterRequest) returns (Response);
+  rpc Login(LoginRequest) returns (Response);
+  rpc Logout(LogoutRequest) returns (Response);
   rpc ChannelPost(ChannelPostRequest) returns (Response);
   rpc DirectMessage(DirectMessageRequest) returns (Response);
-  rpc Login(LoginRequest) returns (Response);
   rpc Watch(WatchRequest) returns (Response);
-  rpc Unwatch(UnblockRequest) returns (Response);
+  rpc Unwatch(UnwatchRequest) returns (Response);
   rpc Block(BlockRequest) returns (Response);
   rpc Unblock(UnblockRequest) returns (Response);
-  
+  rpc MessageStream(Empty) returns (MessageResponse);
 } 
-
