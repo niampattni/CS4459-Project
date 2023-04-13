@@ -24,14 +24,16 @@ CREATE TABLE Watching (
     user_id INT,
     channel_id INT,
     FOREIGN KEY (user_id) REFERENCES User(id),
-    FOREIGN KEY (channel_id) REFERENCES Channel(id)
+    FOREIGN KEY (channel_id) REFERENCES Channel(id),
+	PRIMARY KEY (user_id, channel_id)
 );
 
 CREATE TABLE Block (
     user_id INT,
     block_id INT,
     FOREIGN KEY (user_id) REFERENCES User(id),
-    FOREIGN KEY (block_id) REFERENCES User(id)
+    FOREIGN KEY (block_id) REFERENCES User(id),
+	PRIMARY KEY (user_id, block_id)
 );
 
 CREATE TABLE Online (
@@ -46,5 +48,6 @@ CREATE TABLE Missed (
     from_user INT NOT NULL,
     sender_name VARCHAR(50) NOT NULL,
     datetime DATETIME NOT NULL,
+	channel_name VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES User(id)
 );

@@ -58,7 +58,7 @@ def channel_post(stub, params, token):
         return
 
     post_response = stub.ChannelPost(chatRPC_pb2.ChannelPostRequest(channel_name=channel, message=message, access_token=token))
-    if not post_response.status:
+    if post_response.status:
         print(post_response.text)
 
 def watch_channel(stub, params, token):
@@ -131,9 +131,7 @@ def check_auth(stub):
     if os.path.exists('auth.crt'):
         with open('auth.crt', 'r') as cert:
             auth_token = cert.readline().strip()
-            check_login = stub.ChannelPost(chatRPC_pb2.ChannelPostRequest(channel_name='test', message='test', access_token=auth_token))
-            if check_login.text != 'Unauthenticated.':
-                return auth_token
+            return auth_token
     return None
 
 def incoming_message_stream(stub, token):
@@ -144,6 +142,7 @@ def user_requests(stub):
     auth_token = None
     first_loop = True
 
+    first_loop = True
     while(True):
         if auth_token == None:
             print('Welcome to the chat application.')
@@ -165,7 +164,7 @@ def user_requests(stub):
                 username, password = user_pass_prompt()
                 auth_token = login(stub, username, password)
             
-            threading.Thread(target=incoming_message_stream, args=[stub, auth_token], daemon=True).start()
+        threading.Thread(target=incoming_message_stream, args=[stub, auth_token], daemon=True).start()
 
         if first_loop:
             print('Enter help for available actions and channels.')
@@ -203,4 +202,7 @@ def run():
         stub = chatRPC_pb2_grpc.ChatServiceStub(channel)
         user_requests(stub)
 
-run()
+try:
+    run()
+except KeyboardInterrupt:
+    pass
