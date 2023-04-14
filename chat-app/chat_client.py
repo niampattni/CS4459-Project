@@ -156,7 +156,7 @@ def user_requests(stub):
                 username, password = user_pass_prompt()
                 auth_token = login(stub, username, password)
             
-        threading.Thread(target=incoming_message_stream, args=[stub, auth_token], daemon=True).start()
+            threading.Thread(target=incoming_message_stream, args=[stub, auth_token], daemon=True).start()
 
         if first_loop:
             print('Enter help for available actions and channels.')
